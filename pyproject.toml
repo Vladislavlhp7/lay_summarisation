@@ -2,12 +2,15 @@
 name = "laysummarisation"
 version = "0.1.0"
 description = ""
-authors = ["Ahmed Soliman <>", "Marc Wenzlawski <marc.wenzlawski@outlook.de>", "Vladislav Yotkov <vladislav.yotkov7@gmail.com>"]
+authors = ["Ahmed Soliman <unknown@unknown.com>", "Marc Wenzlawski <marc.wenzlawski@outlook.de>", "Vladislav Yotkov <vladislav.yotkov7@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 transformers = "^4.26.1"
+jupyter = "^1.0.0"
+ipykernel = "^6.21.3"
+pandas = "^1.5.3"
 
 
 [build-system]
