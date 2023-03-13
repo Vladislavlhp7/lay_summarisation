@@ -20,6 +20,10 @@ potetry install
 
 For further info on managing packages etc, see the Poetry docs.
 
+## The data
+
+Extract the data into `data` folder.
+
 ## Links
 
 https://aclweb.org/aclwiki/BioNLP_Workshop
