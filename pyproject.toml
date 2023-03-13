@@ -2,11 +2,12 @@
 name = "laysummarisation"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Ahmed Soliman <>", "Marc Wenzlawski <marc.wenzlawski@outlook.de>", "Vladislav Yotkov <vladislav.yotkov7@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.8"
+transformers = "^4.26.1"
 
 
 [build-system]
