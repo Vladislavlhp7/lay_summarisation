@@ -38,9 +38,19 @@ chmod +x scripts/*
 ./scripts/prep_all.sh
 ```
 
-Alternatively, you can download the data manually from the following link:
+If the file download does not work, you can download the dev data manually from the following link:
 
 <https://drive.google.com/uc?id=1FFfa4fHlhEAyJZIM2Ue-AR6Noe9gOJOF&export=download>
+
+## Running the code
+
+### Locally
+
+Don't
+
+### CSF
+
+Look at the `jobs` folder.
 
 ## Links
 
