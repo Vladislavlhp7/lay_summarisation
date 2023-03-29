@@ -52,6 +52,14 @@ Don't
 
 Look at the `jobs` folder.
 
+## Questions
+
+How to use poetry on CSF?
+
+How to setup pytorch for GPU on CSF?
+
+Should we use MLFlow?
+
 ## Links
 
 https://aclweb.org/aclwiki/BioNLP_Workshop
