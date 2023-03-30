@@ -20,9 +20,45 @@ potetry install
 
 For further info on managing packages etc, see the Poetry docs.
 
-## The data
+## Data and weights
 
-Extract the data into `data` folder.
+Using the scripts in the `scripts` folder, you can automatically download and extract the data.
+
+Before you download the model weights, ensure you crate a `.env` file with the following contents:
+
+```shell
+USERNAME=<your username>
+PASSWORD=<your password>
+```
+
+Then just run the following commands:
+
+```shell
+chmod +x scripts/*
+./scripts/prep_all.sh
+```
+
+If the file download does not work, you can download the dev data manually from the following link:
+
+<https://drive.google.com/uc?id=1FFfa4fHlhEAyJZIM2Ue-AR6Noe9gOJOF&export=download>
+
+## Running the code
+
+### Locally
+
+Don't
+
+### CSF
+
+Look at the `jobs` folder.
+
+## Questions
+
+How to use poetry on CSF?
+
+How to setup pytorch for GPU on CSF?
+
+Should we use MLFlow?
 
 ## Links
 
