@@ -1,4 +1,5 @@
 # Custom
+.idea
 tmp
 weights/*
 data/*
