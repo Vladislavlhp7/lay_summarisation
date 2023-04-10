@@ -55,7 +55,7 @@ def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_
     """
 
     if pre_summarise:
-        # Use LexRank to summarize the article
+        # Use LexRank to summarize the articles in a batch
         article_summary = [lexrank_summarize(article) for article in batch["article"]]
     else:
         article_summary = batch["article"]
@@ -113,7 +113,7 @@ def load_article_dataset(dtype: str, filename: str, directory: str) -> Dataset:
     path = os.path.join(directory, f'{dtype}/{filename}_{dtype}.jsonl')
 
     # Load the dataset into a Pandas DataFrame
-    df = pd.read_json(path, lines=True)
+    df = pd.read_json(path, lines=True, nrows=10)
 
     # Convert the DataFrame to a Hugging Face Datasets object
     dataset = Dataset.from_pandas(df)
