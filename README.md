@@ -53,7 +53,7 @@ For further info on managing packages etc, see the Poetry docs.
 
 ## Data and weights
 
-To access the internet from the CSF cluster, you need to use the `proxy` command. For example:
+To access the internet from the CSF cluster, you need to use the `proxy` module:
 
 ```shell
 module load tools/env/proxy2
@@ -64,14 +64,18 @@ Using the scripts in the `scripts` folder, you can automatically download and ex
 Run the following command to setup both data and model weights:
 
 ```shell
-./scripts/setup_all
+./scripts/setup_all.sh
 ```
 
 Or individually using `./scripts/setup_data.sh` and `./scripts/setup_weights.sh`.
 
-If that somehow does not work, download it manually and extract the contents to data/orig
+If downloading the data does not work, download it manually and extract the contents to data/orig
 
 <https://drive.google.com/uc?id=1FFfa4fHlhEAyJZIM2Ue-AR6Noe9gOJOF&export=download>
+
+For the weights, clone the following repo into the weights folder:
+
+<https://huggingface.co/yikuan8/Clinical-Longformer>
 
 ## Running the code
 
