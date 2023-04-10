@@ -1,12 +1,13 @@
-from datasets import DatasetDict, Dataset
 import os
+from random import seed
+
+import numpy as np
 import pandas as pd
 import torch
-import numpy as np
+from datasets import Dataset, DatasetDict
 from rouge import Rouge
-from random import seed
-from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
+from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
 
@@ -39,10 +40,12 @@ def lexrank_summarize(article: str, sentence_count: int = 25) -> str:
     return summary
 
 
-def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_length, presummarise=False):
+def process_data_to_model_inputs(
+    batch, tokenizer, max_input_length, max_output_length, presummarise=False
+):
     """
     Tokenize and preprocess a batch of data for use as model inputs.
-    
+
     Args:
     batch (dict): A dictionary containing the input and output data for the batch.
     tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
@@ -75,13 +78,18 @@ def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_
     )
 
     # Create a dictionary to store the preprocessed model inputs
-    processed_batch = {"input_ids": inputs.input_ids, "attention_mask": inputs.attention_mask}
+    processed_batch = {
+        "input_ids": inputs.input_ids,
+        "attention_mask": inputs.attention_mask,
+    }
 
     # Assign the tokenized inputs and attention masks to the processed batch dictionary
 
     # Create a list of 0s to use as the global attention mask
-    global_attention_mask = [[0] * len(processed_batch["input_ids"][0]) for _ in
-                             range(len(processed_batch["input_ids"]))]
+    global_attention_mask = [
+        [0] * len(processed_batch["input_ids"][0])
+        for _ in range(len(processed_batch["input_ids"]))
+    ]
     # Set the first element of the global attention mask to 1 to indicate the start of the sequence
     global_attention_mask[0][0] = 1
     processed_batch["global_attention_mask"] = global_attention_mask
@@ -89,8 +97,10 @@ def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_
     # Assign the tokenized outputs and label masks to the processed batch dictionary
     processed_batch["labels"] = outputs.input_ids
     # Replace the PAD tokens with -100 to ignore them during training
-    processed_batch["labels"] = [[-100 if token == tokenizer.pad_token_id else token for token in labels] for labels in
-                                 processed_batch["labels"]]
+    processed_batch["labels"] = [
+        [-100 if token == tokenizer.pad_token_id else token for token in labels]
+        for labels in processed_batch["labels"]
+    ]
 
     # Return the preprocessed model inputs as a dictionary
     return processed_batch
@@ -99,18 +109,18 @@ def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_
 def load_article_dataset(dtype: str, filename: str, directory: str) -> Dataset:
     """
     Load an article dataset of a specified type from a given directory.
-    
+
     Args:
     dtype (str): The type of dataset to load, such as 'train' or 'val'.
     filename (str): The name of the dataset file to load.
     directory (str): The directory path where the dataset file is located.
-    
+
     Returns:
     Dataset: A Hugging Face Datasets object containing the loaded dataset.
     """
 
     # Construct the path to the dataset file
-    path = os.path.join(directory, f'{dtype}/{filename}_{dtype}.jsonl')
+    path = os.path.join(directory, f"{dtype}/{filename}_{dtype}.jsonl")
 
     # Load the dataset into a Pandas DataFrame
     df = pd.read_json(path, lines=True)
@@ -122,11 +132,17 @@ def load_article_dataset(dtype: str, filename: str, directory: str) -> Dataset:
     return dataset
 
 
-def create_article_dataset_dict(filename: str, directory: str, batch_size: int, tokenizer,
-                                max_input_length: int, max_output_length: int) -> DatasetDict:
+def create_article_dataset_dict(
+    filename: str,
+    directory: str,
+    batch_size: int,
+    tokenizer,
+    max_input_length: int,
+    max_output_length: int,
+) -> DatasetDict:
     """
     Create a dictionary of preprocessed datasets from article data in a given directory.
-    
+
     Args:
         filename (str): The filename of the dataset to load.
         directory (str): The directory path where the dataset is located.
@@ -140,7 +156,7 @@ def create_article_dataset_dict(filename: str, directory: str, batch_size: int, 
     """
 
     # Define the dataset types to load
-    dataset_types = ['train', 'val']
+    dataset_types = ["train", "val"]
 
     # Initialize an empty dictionary to store the preprocessed datasets
     datasets = {}
@@ -156,11 +172,18 @@ def create_article_dataset_dict(filename: str, directory: str, batch_size: int, 
             batched=True,
             batch_size=batch_size,
             remove_columns=["article", "lay_summary", "headings"],
-            fn_kwargs={"tokenizer": tokenizer, "max_input_length": max_input_length, "max_output_length": max_output_length},
+            fn_kwargs={
+                "tokenizer": tokenizer,
+                "max_input_length": max_input_length,
+                "max_output_length": max_output_length,
+            },
         )
 
         # Set the format of the dataset to be used with PyTorch
-        dataset.set_format(type='torch', columns=['input_ids', 'attention_mask', 'global_attention_mask', 'labels'])
+        dataset.set_format(
+            type="torch",
+            columns=["input_ids", "attention_mask", "global_attention_mask", "labels"],
+        )
 
         # Add the preprocessed dataset to the datasets dictionary
         datasets[dtype] = dataset
@@ -172,10 +195,10 @@ def create_article_dataset_dict(filename: str, directory: str, batch_size: int, 
 def set_seed(seed_v: int = 42) -> None:
     """
     Set the random seed for the random number generators used by NumPy, Python, and PyTorch.
-    
+
     Args:
     seed_v (int): The value to use as the random seed.
-    
+
     Returns:
     None
     """
@@ -200,10 +223,10 @@ def set_seed(seed_v: int = 42) -> None:
 def compute_metrics(eval_pred) -> dict:
     """
     Compute the ROUGE scores for a given set of predictions and labels.
-    
+
     Args:
     eval_pred (tuple): A tuple containing two lists of predictions and labels.
-    
+
     Returns:
     dict: A dictionary containing the ROUGE scores for ROUGE-1, ROUGE-2, and ROUGE-L.
     """
@@ -213,11 +236,36 @@ def compute_metrics(eval_pred) -> dict:
 
     # Compute the ROUGE scores for the predictions and labels using the Rouge package
     rouge = Rouge()
-    scores = rouge.get_scores(predictions, labels, avg=True)
+    scores = dict(rouge.get_scores(predictions, labels, avg=True))
 
     # Return the ROUGE scores as a dictionary with keys for each metric
     return {
         "rouge1_f": scores["rouge-1"]["f"],
         "rouge2_f": scores["rouge-2"]["f"],
-        "rougeL_f": scores["rouge-l"]["f"]
+        "rougeL_f": scores["rouge-l"]["f"],
     }
+
+
+def read_jsonl_data(path):
+    """
+    Load data from the given path.
+    :param path: path to the data
+    :return: data
+    """
+    return pd.read_json(path, lines=True)
+
+
+def lexrank_data(data, max_length=130):
+    """
+    Repare the data.
+    :param data: data to be repared
+    :param max_len: max length of the summary
+    :return: repared data
+    """
+    summarizer = LexRankSummarizer()
+    summaries = []
+    for d in data:
+        parser = PlaintextParser.from_string(d, Tokenizer("english"))
+        summary = summarizer(parser.document, max_length)
+        summaries.append(summary)
+    return summaries
