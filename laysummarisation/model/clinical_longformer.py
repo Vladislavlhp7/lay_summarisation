@@ -1,6 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from transformers import Trainer, TrainingArguments
-import torch
 from longformer_helper import *
 
 
@@ -9,6 +8,9 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     torch.cuda.empty_cache()
     set_seed(42)
+
+    os.environ["WANDB_PROJECT"] = "laysummarisation"
+    os.environ["WANDB_LOG_MODEL"] = "true"
 
     lr = 3e-5  # from paper
     batch_size = 32
@@ -41,6 +43,7 @@ def main():
         load_best_model_at_end=True,
         metric_for_best_model='rouge2_f',
         run_name=model_name,
+        report_to="wandb",
     )
 
     trainer = Trainer(
