@@ -53,31 +53,36 @@ For further info on managing packages etc, see the Poetry docs.
 
 ## Data and weights
 
+To access the internet from the CSF cluster, you need to use the `proxy` command. For example:
+
+```shell
+module load tools/env/proxy2
+```
+
 Using the scripts in the `scripts` folder, you can automatically download and extract the data.
 
-Before you download the model weights, ensure you crate a `.env` file with the following contents:
+Run the following command to setup both data and model weights:
 
 ```shell
-USERNAME=<your username>
-PASSWORD=<your password>
+./scripts/setup_all
 ```
 
-Then just run the following commands:
+Or individually using `./scripts/setup_data.sh` and `./scripts/setup_weights.sh`.
 
-```shell
-chmod +x scripts/*
-./scripts/prep_all.sh
-```
-
-If the file download does not work, you can download the dev data manually from the following link:
+If that somehow does not work, download it manually and extract the contents to data/orig
 
 <https://drive.google.com/uc?id=1FFfa4fHlhEAyJZIM2Ue-AR6Noe9gOJOF&export=download>
 
 ## Running the code
 
-### Locally
+First download the data and weights as described above.
 
-Don't
+Then run the following pre-processing code to pre-process the entire dataset:
+```shell
+./scripts/process_all.sh
+```
+
+Or run individually with `./scripts/data/elife.sh` and `./scripts/data/plos.sh`.
 
 ### CSF
 
