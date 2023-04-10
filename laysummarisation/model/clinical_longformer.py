@@ -45,7 +45,6 @@ def main():
         evaluation_strategy='steps',
         save_strategy='steps',
         logging_steps=250,
-        eval_steps=5000,
         warmup_steps=1500,
         save_total_limit=2,
         gradient_accumulation_steps=4,
