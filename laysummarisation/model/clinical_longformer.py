@@ -33,7 +33,7 @@ def main():
     filename = "eLife"
     directory = "../../data/task1_development/"
     directory = os.path.join(dir_path, directory)
-    article_dataset = create_article_dataset_dict(filename, directory, batch_size, tokenizer, max_input_length)
+    article_dataset = create_article_dataset_dict(filename, directory, batch_size, tokenizer, max_input_length, max_output_length)
 
     output_dir = "../../tmp/"
     output_dir = os.path.join(dir_path, output_dir)

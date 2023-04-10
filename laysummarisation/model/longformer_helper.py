@@ -39,7 +39,7 @@ def lexrank_summarize(article: str, sentence_count: int = 25) -> str:
     return summary
 
 
-def process_data_to_model_inputs(batch, tokenizer, max_input_length, presummarise=False):
+def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_length, presummarise=False):
     """
     Tokenize and preprocess a batch of data for use as model inputs.
     
@@ -47,6 +47,7 @@ def process_data_to_model_inputs(batch, tokenizer, max_input_length, presummaris
     batch (dict): A dictionary containing the input and output data for the batch.
     tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
     max_input_length (int): The maximum length of the input and output sequences after tokenization.
+    max_output_length (int): The maximum length of the output sequences after tokenization.
     presummarise (bool): Whether to presummarise the input data before tokenization.
 
     Returns:
@@ -70,7 +71,7 @@ def process_data_to_model_inputs(batch, tokenizer, max_input_length, presummaris
         batch["lay_summary"],
         padding="max_length",
         truncation=True,
-        max_length=max_input_length,
+        max_length=max_output_length,
     )
 
     # Create a dictionary to store the preprocessed model inputs
@@ -122,7 +123,7 @@ def load_article_dataset(dtype: str, filename: str, directory: str) -> Dataset:
 
 
 def create_article_dataset_dict(filename: str, directory: str, batch_size: int, tokenizer,
-                                max_input_length: int) -> DatasetDict:
+                                max_input_length: int, max_output_length: int) -> DatasetDict:
     """
     Create a dictionary of preprocessed datasets from article data in a given directory.
     
@@ -132,7 +133,8 @@ def create_article_dataset_dict(filename: str, directory: str, batch_size: int, 
         batch_size (int): The batch size to use for processing the dataset.
         tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
         max_input_length (int): The maximum length of the input and output sequences after tokenization.
-    
+        max_output_length (int): The maximum length of the output sequences after tokenization.
+
     Returns:
         DatasetDict: A dictionary containing preprocessed datasets for training and validation.
     """
@@ -154,7 +156,7 @@ def create_article_dataset_dict(filename: str, directory: str, batch_size: int, 
             batched=True,
             batch_size=batch_size,
             remove_columns=["article", "lay_summary", "headings"],
-            fn_kwargs={"tokenizer": tokenizer, "max_input_length": max_input_length},
+            fn_kwargs={"tokenizer": tokenizer, "max_input_length": max_input_length, "max_output_length": max_output_length},
         )
 
         # Set the format of the dataset to be used with PyTorch
