@@ -1,4 +1,4 @@
 #!/bin/bash
 
-export CORPUS=elife
+export CORPUS=eLife
 ./scripts/train/tune.sh

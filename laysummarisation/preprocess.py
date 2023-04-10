@@ -25,6 +25,10 @@ class Arguments:
         default=25,
         metadata={"help": "The number of sentences to extract from the article."},
     )
+    entries: Optional[int] = field(
+        default=1000,
+        metadata={"help": "The number of entries to process."},
+    )
 
 
 def main(conf: Arguments):

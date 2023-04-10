@@ -10,10 +10,12 @@ mkdir -p ${SAVE_DIR}
 python -m laysummarisation.preprocess \
   --fname ${DATA_DIR}/train/${CORPUS}_train.jsonl \
   --output ${SAVE_DIR}/${CORPUS}_train.jsonl \
-  --lex_sent 25 
+  --lex_sent 25 \
+  --entries 10
 
 # Pre-process val
 python -m laysummarisation.preprocess \
   --fname ${DATA_DIR}/val/${CORPUS}_val.jsonl \
   --output ${SAVE_DIR}/${CORPUS}_val.jsonl \
-  --lex_sent 25 
+  --lex_sent 25 \
+  --entries 10
