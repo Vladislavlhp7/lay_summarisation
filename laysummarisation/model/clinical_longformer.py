@@ -55,9 +55,7 @@ def main():
         weight_decay=0.01,
         load_best_model_at_end=True,
         run_name=model_name,
-        report_to="wandb",
-        fp16=True,
-        fp16_backend="apex",
+        report_to="wandb"
     )
 
     trainer = Trainer(
