@@ -1,5 +1,4 @@
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-from transformers import Trainer, TrainingArguments
+from transformers import AutoTokenizer, AutoModelForMaskedLM, Seq2SeqTrainingArguments, Seq2SeqTrainer
 from longformer_helper import *
 
 
@@ -40,7 +39,7 @@ def main():
 
     output_dir = "../../tmp/"
     output_dir = os.path.join(dir_path, output_dir)
-    args = TrainingArguments(
+    args = Seq2SeqTrainingArguments(
         output_dir=output_dir,
         evaluation_strategy='steps',
         save_strategy='steps',
@@ -58,7 +57,7 @@ def main():
         report_to="wandb"
     )
 
-    trainer = Trainer(
+    trainer = Seq2SeqTrainer(
         model=model,
         args=args,
         train_dataset=article_dataset['train'],
