@@ -1,4 +1,3 @@
-import datetime
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -12,11 +11,9 @@ class LFParserConfig:
     """
 
     ftrain: str = field(
-        default=None,
         metadata={"help": "Train file (.jsonl)"},
     )
     fval: str = field(
-        default=None,
         metadata={"help": "Validation file (.jsonl)"},
     )
     seed: Optional[int] = field(
@@ -59,47 +56,7 @@ class LFParserConfig:
         default=4,
         metadata={"help": "The batch size for training"},
     )
-
-    # Optimizers
-    beta1: Optional[float] = field(
-        default=0.9,
-        metadata={"help": "Adam beta1"},
-    )
-    beta2: Optional[float] = field(
-        default=0.998,
-        metadata={"help": "Adam beta2"},
-    )
-    warmup_ratio: Optional[float] = field(
-        default=0.1,
-        metadata={"help": "The linear warmup ratio"},
-    )
-    clip: Optional[float] = field(
-        default=5.0,
-        metadata={"help": "The value of gradient clipping"},
-    )
-    batch_size: Optional[int] = field(
-        default=4,
-        metadata={"help": "The batch size for training"},
-    )
-    eval_batch_size: Optional[int] = field(
-        default=4,
-        metadata={"help": "The batch size for prediction and evaluation"},
-    )
     epochs: Optional[int] = field(
         default=20,
         metadata={"help": "The number of epochs"},
-    )
-    terminate_epochs: Optional[int] = field(
-        default=20,
-        metadata={
-            "help": "The number of terminate epochs. "
-            "Training will be forced to terminate by this epoch number."
-        },
-    )
-    evaluate_epochs: Optional[int] = field(
-        default=2,
-        metadata={
-            "help": "The number of epochs for evaluation. "
-            "Validation will be conducted every this epochs."
-        },
     )
