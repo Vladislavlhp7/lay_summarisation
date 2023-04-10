@@ -27,7 +27,7 @@ def main():
     model = AutoModelForMaskedLM.from_pretrained(path_to_model)
     model.to(device)
     
-    num_train_epochs = 8
+    num_train_epochs = 3
     model_name = model_checkpoint.split("/")[-1]
 
     filename = "eLife"
@@ -39,8 +39,10 @@ def main():
     output_dir = os.path.join(dir_path, output_dir)
     args = TrainingArguments(
         output_dir=output_dir,
-        evaluation_strategy='epoch',
-        save_strategy='epoch',
+        evaluation_strategy='steps',
+        save_strategy='steps',
+        save_steps=1000,
+        eval_steps=1000,
         learning_rate=lr,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
