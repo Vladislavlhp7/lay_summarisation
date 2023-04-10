@@ -29,7 +29,7 @@ def main():
 
     path_to_model = "../../Clinical-Longformer"
     path_to_model = os.path.join(dir_path, path_to_model)
-    model = LEDForConditionalGeneration.from_pretrained(path_to_model)
+    model = AutoModelForSeq2SeqLM.from_pretrained(path_to_model)
     model.to(device)
     
     num_train_epochs = 3
