@@ -56,7 +56,7 @@ def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_
 
     if pre_summarise:
         # Use LexRank to summarize the article
-        article_summary = lexrank_summarize(batch["article"])
+        article_summary = [lexrank_summarize(article) for article in batch["article"]]
     else:
         article_summary = batch["article"]
 
