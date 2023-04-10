@@ -1,37 +1,29 @@
-#!/bin/bash
-# Script to start the finetuning of the model.
+#!/bin/bash --login
+#$ -N clinical_longformer_
+#$ -cwd
 
-set -eu
+#$ -l v100
+#$ -pe smp.pe 8
 
-# TODO: Determine use for following variables.
+module load apps/binapps/pytorch/1.11.0-39-gpu-cu113
 
-# Target corpus fine-tuning
+SEED_DIR=./log/multitask_am/st/${CORPUS}/${SEED}
+
 python -m laysummarisation.model.train \
-    --ftrain ${SEED_DIR}/data/train.mrp \
-    --fvalid ${SEED_DIR}/data/dev.mrp \
-    --ftest ${SEED_DIR}/data/test.mrp \
-    --seed ${SEED} \
-    --model_name_or_path ${SEED_DIR}/pretrain/model \
-    --log ${SEED_DIR}/finetune \
-    --split_document false \
-    --attention_window 512 \
-    --batch_size 4 \
-    --eval_batch_size 16 \
-    --postprocessor "default:default,aaec:aaec,aaec_essay:aaec,aaec_para:aaec,cdcp:cdcp,abstrct:abstrct,trees:aaec,graph:cdcp" \
-    --lambda_bio 1.0 \
-    --lambda_proposition ${lambda_proposition} \
-    --lambda_arc ${lambda_arc} \
-    --lambda_rel ${lambda_rel} \
-    --lambda_tgt_fw 1.0 \
-    --lambda_other_fw 1.0 \
-    --lr ${lr} \
-    --beta1 0.9 \
-    --beta2 0.998 \
-    --warmup_ratio 0.1 \
-    --clip 5.0 \
-    --epochs ${finetune_epochs} \
-    --terminate_epochs ${finetune_epochs} \
-    --evaluate_epochs 2 \
-    --disable_evaluation false
-# -> The trained model was saved into "${SEED_DIR}/finetune/model"
+  --ftrain ${SEED_DIR}/data/train.mrp \
+  --fvalid ${SEED_DIR}/data/dev.mrp \
+  --output_dir tmp \
+  --seed ${SEED} \
+  --model_checkpoint ./weights/Clinical-Longformer \
+  --device "gpu" \
+  --max_encode 4096 \
+  --max_decode 1024 \
+  --lr 0.00003 \
+  --batch_size 4 \
+  --epochs 20 \
+  --save_steps 1000 \
+  --eval_steps 1000 \
+  --weight_decay 0.01 \
+  --metric "rouge2_f"
+
 

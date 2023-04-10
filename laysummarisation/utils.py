@@ -106,7 +106,7 @@ def process_data_to_model_inputs(
     return processed_batch
 
 
-def load_article_dataset(dtype: str, filename: str, directory: str) -> Dataset:
+def load_article_dataset(fpath: str) -> Dataset:
     """
     Load an article dataset of a specified type from a given directory.
 
@@ -119,22 +119,29 @@ def load_article_dataset(dtype: str, filename: str, directory: str) -> Dataset:
     Dataset: A Hugging Face Datasets object containing the loaded dataset.
     """
 
-    # Construct the path to the dataset file
-    path = os.path.join(directory, f"{dtype}/{filename}_{dtype}.jsonl")
-
     # Load the dataset into a Pandas DataFrame
-    df = pd.read_json(path, lines=True)
+    df = pd.read_json(fpath, lines=True)
 
     # Convert the DataFrame to a Hugging Face Datasets object
-    dataset = Dataset.from_pandas(df)
+    return Dataset.from_pandas(df)
 
-    # Return the loaded dataset
-    return dataset
+
+def load_jsonl_pandas(fpath: str):
+    """
+    Load the the entire JSONL file into a Pandas DataFrame.
+
+    Args:
+    fpath (str): The path to the JSONL file to load.
+
+    Returns:
+    DataFrame: A Pandas DataFrame containing the first line of the JSONL file.
+    """
+
+    return pd.read_json(fpath, lines=True)
 
 
 def create_article_dataset_dict(
     filename: str,
-    directory: str,
     batch_size: int,
     tokenizer,
     max_input_length: int,
@@ -145,7 +152,6 @@ def create_article_dataset_dict(
 
     Args:
         filename (str): The filename of the dataset to load.
-        directory (str): The directory path where the dataset is located.
         batch_size (int): The batch size to use for processing the dataset.
         tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
         max_input_length (int): The maximum length of the input and output sequences after tokenization.
@@ -164,7 +170,7 @@ def create_article_dataset_dict(
     # Iterate through each dataset type and preprocess the data
     for dtype in dataset_types:
         # Load the dataset
-        dataset = load_article_dataset(dtype, filename, directory)
+        dataset = load_article_dataset(filename)
 
         # Preprocess the data for model inputs
         dataset = dataset.map(
