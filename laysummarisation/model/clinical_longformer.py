@@ -20,7 +20,10 @@ def main():
     model_checkpoint = "yikuan8/Clinical-Longformer"
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
     path_to_model = "../../Clinical-Longformer"
+    path_to_model = os.path.join(dir_path, path_to_model)
     model = AutoModelForMaskedLM.from_pretrained(path_to_model)
     model.to(device)
     
@@ -29,10 +32,13 @@ def main():
 
     filename = "eLife"
     directory = "../../data/task1_development/"
+    directory = os.path.join(dir_path, directory)
     article_dataset = create_article_dataset_dict(filename, directory, batch_size, tokenizer, max_input_length)
 
+    output_dir = "../../tmp/"
+    output_dir = os.path.join(dir_path, output_dir)
     args = TrainingArguments(
-        output_dir='../../tmp/',
+        output_dir=output_dir,
         evaluation_strategy='epoch',
         save_strategy='epoch',
         learning_rate=lr,
