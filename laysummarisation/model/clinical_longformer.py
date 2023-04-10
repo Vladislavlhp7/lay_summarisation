@@ -1,4 +1,5 @@
-from transformers import AutoTokenizer, AutoModelForMaskedLM, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import AutoTokenizer, Seq2SeqTrainingArguments, Seq2SeqTrainer, \
+    AutoModelForSeq2SeqLM
 from longformer_helper import *
 
 
@@ -24,7 +25,7 @@ def main():
 
     path_to_model = "../../Clinical-Longformer"
     path_to_model = os.path.join(dir_path, path_to_model)
-    model = AutoModelForMaskedLM.from_pretrained(path_to_model)
+    model = AutoModelForSeq2SeqLM.from_pretrained(path_to_model)
     model.to(device)
     
     num_train_epochs = 3

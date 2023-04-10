@@ -113,7 +113,7 @@ def load_article_dataset(dtype: str, filename: str, directory: str) -> Dataset:
     path = os.path.join(directory, f'{dtype}/{filename}_{dtype}.jsonl')
 
     # Load the dataset into a Pandas DataFrame
-    df = pd.read_json(path, lines=True, nrows=10)
+    df = pd.read_json(path, lines=True, nrows=1)
 
     # Convert the DataFrame to a Hugging Face Datasets object
     dataset = Dataset.from_pandas(df)
