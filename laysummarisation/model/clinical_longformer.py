@@ -13,7 +13,7 @@ def main():
     os.environ["WANDB_LOG_MODEL"] = "true"
 
     lr = 3e-5  # from paper
-    batch_size = 32
+    batch_size = 1  # GPU does not have enough memory for batch_size > 1
     max_input_length = 4096
     max_output_length = 1024
 
