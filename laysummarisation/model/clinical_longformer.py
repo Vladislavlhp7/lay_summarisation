@@ -2,9 +2,10 @@ from transformers import (
     Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
     AutoTokenizer,
-    AutoModelForSeq2SeqLM
+    AutoModelForSeq2SeqLM, LEDForConditionalGeneration
 )
 from longformer_helper import *
+import torch
 
 
 def main():
@@ -23,13 +24,12 @@ def main():
     pre_summarise = True
 
     model_checkpoint = "yikuan8/Clinical-Longformer"
-    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     path_to_model = "../../Clinical-Longformer"
+    tokenizer = AutoTokenizer.from_pretrained(path_to_model)
     path_to_model = os.path.join(dir_path, path_to_model)
-    model = AutoModelForSeq2SeqLM.from_pretrained(path_to_model)
+    model = LEDForConditionalGeneration.from_pretrained(path_to_model)
     model.to(device)
     
     num_train_epochs = 3
