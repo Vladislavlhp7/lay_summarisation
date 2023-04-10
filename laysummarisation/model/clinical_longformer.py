@@ -1,9 +1,4 @@
-from transformers import (
-    Seq2SeqTrainer,
-    Seq2SeqTrainingArguments,
-    AutoTokenizer,
-    AutoModelForSeq2SeqLM, LEDForConditionalGeneration
-)
+from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, AutoTokenizer, AutoModelForSeq2SeqLM, LEDForConditionalGeneration
 from longformer_helper import *
 import torch
 
