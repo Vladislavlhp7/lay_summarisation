@@ -2,18 +2,19 @@
 import os
 
 import torch
-from transformers import (AutoModelForMaskedLM, AutoTokenizer, Trainer,
-                          TrainingArguments)
+from transformers import (AutoModelForMaskedLM, AutoTokenizer,
+                          HfArgumentParser, Trainer, TrainingArguments)
 
+from laysummarisation.config import LFParserConfig
 from laysummarisation.utils import (compute_metrics,
                                     create_article_dataset_dict, set_seed)
 
 
-def main():
+def train(config):
     print("CUDA available:" + str(torch.cuda.is_available()))
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch.cuda.empty_cache()
-    set_seed(42)
+    set_seed(config.seed)
 
     os.environ["WANDB_PROJECT"] = "laysummarisation"
     os.environ["WANDB_LOG_MODEL"] = "true"
@@ -71,6 +72,12 @@ def main():
     )
 
     trainer.train()
+
+
+def main():
+    parser = HfArgumentParser(LFParserConfig)
+    train(parser.parse_args_into_dataclasses())
+    exit()
 
 
 if __name__ == "__main__":

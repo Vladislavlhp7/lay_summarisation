@@ -6,7 +6,7 @@ set -eu
 # TODO: Determine use for following variables.
 
 # Target corpus fine-tuning
-python -m laysummarisation.trainer.train \
+python -m laysummarisation.model.train \
     --ftrain ${SEED_DIR}/data/train.mrp \
     --fvalid ${SEED_DIR}/data/dev.mrp \
     --ftest ${SEED_DIR}/data/test.mrp \
@@ -34,3 +34,4 @@ python -m laysummarisation.trainer.train \
     --evaluate_epochs 2 \
     --disable_evaluation false
 # -> The trained model was saved into "${SEED_DIR}/finetune/model"
+
