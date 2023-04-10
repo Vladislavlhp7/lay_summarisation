@@ -69,11 +69,11 @@ Run the following command to setup both data and model weights:
 
 Or individually using `./scripts/setup_data.sh` and `./scripts/setup_weights.sh`.
 
-If downloading the data does not work, download it manually and extract the contents to data/orig
+If downloading the data does not work, download it manually and extract the contents to `data/orig`
 
 <https://drive.google.com/uc?id=1FFfa4fHlhEAyJZIM2Ue-AR6Noe9gOJOF&export=download>
 
-For the weights, clone the following repo into the weights folder:
+For the weights, clone the following repo into the `weights` folder:
 
 <https://huggingface.co/yikuan8/Clinical-Longformer>
 
