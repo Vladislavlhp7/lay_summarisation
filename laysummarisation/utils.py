@@ -126,7 +126,7 @@ def load_article_dataset(fpath: str) -> Dataset:
     return Dataset.from_pandas(df)
 
 
-def load_jsonl_pandas(fpath: str):
+def load_jsonl_pandas(fpath: str, nrows=None):
     """
     Load the the entire JSONL file into a Pandas DataFrame.
 
@@ -137,7 +137,7 @@ def load_jsonl_pandas(fpath: str):
     DataFrame: A Pandas DataFrame containing the first line of the JSONL file.
     """
 
-    return pd.read_json(fpath, lines=True)
+    return pd.read_json(fpath, lines=True, nrows=nrows)
 
 
 def create_article_dataset_dict(

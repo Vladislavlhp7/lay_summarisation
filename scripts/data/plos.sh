@@ -1,4 +1,4 @@
 #!/bin/bash
 
 export CORPUS=PLOS
-./scripts/train/tune.sh
+./scripts/data/process.sh

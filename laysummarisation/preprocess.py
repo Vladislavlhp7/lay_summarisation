@@ -26,18 +26,22 @@ class Arguments:
         metadata={"help": "The number of sentences to extract from the article."},
     )
     entries: Optional[int] = field(
-        default=1000,
+        default=None,
         metadata={"help": "The number of entries to process."},
     )
 
 
 def main(conf: Arguments):
     # Load files
-    data = load_jsonl_pandas(conf.fname)
+    print("Loading files...")
+    data = load_jsonl_pandas(conf.fname, nrows=conf.entries)
 
     # LexRank summarise the articles
+    print("Summarising articles...")
     data["article"] = data["article"].apply(lexrank_summarize)
 
+    # Save the data
+    print("Saving data...")
     data.to_json(conf.output, orient="records", lines=True)
     return
 

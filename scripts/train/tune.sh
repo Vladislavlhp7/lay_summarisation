@@ -7,14 +7,16 @@
 
 module load apps/binapps/pytorch/1.11.0-39-gpu-cu113
 
-SEED_DIR=./log/multitask_am/st/${CORPUS}/${SEED}
+SEED_DIR=./data/input
+MODEL=./weights/Clinical-Longformer
+SEED=42
 
 python -m laysummarisation.model.train \
-  --ftrain ${SEED_DIR}/data/train.mrp \
-  --fvalid ${SEED_DIR}/data/dev.mrp \
+  --ftrain ${SEED_DIR}/${CORPUS}_train.jsonl \
+  --fvalid ${SEED_DIR}/${CORPUS}_val.jsonl \
   --output_dir tmp \
   --seed ${SEED} \
-  --model_checkpoint ./weights/Clinical-Longformer \
+  --model_checkpoint ${MODEL} \
   --device "gpu" \
   --max_encode 4096 \
   --max_decode 1024 \

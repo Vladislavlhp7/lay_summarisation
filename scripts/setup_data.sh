@@ -5,8 +5,11 @@ DOWNLOAD_URL="https://drive.google.com/uc?id=1FFfa4fHlhEAyJZIM2Ue-AR6Noe9gOJOF&e
 OUTPUT_FILE="data/task1_development.zip"
 
 # Set the output directory for extracted files
-OUTPUT_DIR="data"
+OUTPUT_DIR="data/orig"
 mkdir -p $OUTPUT_DIR
+
+# cleanup
+rm -rf $OUTPUT_DIR/task1_development
 
 # Download the file using curl command
 curl -L -o $OUTPUT_FILE $DOWNLOAD_URL
