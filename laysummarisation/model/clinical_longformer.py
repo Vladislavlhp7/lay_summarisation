@@ -16,6 +16,7 @@ def main():
     batch_size = 1  # GPU does not have enough memory for batch_size > 1
     max_input_length = 4096
     max_output_length = 1024
+    pre_summarise = True
 
     model_checkpoint = "yikuan8/Clinical-Longformer"
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
@@ -33,7 +34,9 @@ def main():
     filename = "eLife"
     directory = "../../data/task1_development/"
     directory = os.path.join(dir_path, directory)
-    article_dataset = create_article_dataset_dict(filename, directory, batch_size, tokenizer, max_input_length, max_output_length)
+    article_dataset = create_article_dataset_dict(filename=filename, directory=directory, batch_size=batch_size,
+                                                  tokenizer=tokenizer, max_input_length=max_input_length,
+                                                  max_output_length=max_output_length, pre_summarise=pre_summarise)
 
     output_dir = "../../tmp/"
     output_dir = os.path.join(dir_path, output_dir)
