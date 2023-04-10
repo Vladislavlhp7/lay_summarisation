@@ -1,5 +1,9 @@
-from transformers import AutoTokenizer, Seq2SeqTrainingArguments, Seq2SeqTrainer, \
-    AutoModelForSeq2SeqLM
+from transformers import (
+    Seq2SeqTrainer,
+    Seq2SeqTrainingArguments,
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM, LEDForConditionalGeneration
+)
 from longformer_helper import *
 
 
@@ -25,7 +29,7 @@ def main():
 
     path_to_model = "../../Clinical-Longformer"
     path_to_model = os.path.join(dir_path, path_to_model)
-    model = AutoModelForSeq2SeqLM.from_pretrained(path_to_model)
+    model = LEDForConditionalGeneration.from_pretrained(path_to_model)
     model.to(device)
     
     num_train_epochs = 3
@@ -41,6 +45,7 @@ def main():
     output_dir = "../../tmp/"
     output_dir = os.path.join(dir_path, output_dir)
     args = Seq2SeqTrainingArguments(
+        predict_with_generate=True,
         output_dir=output_dir,
         evaluation_strategy='steps',
         save_strategy='steps',
