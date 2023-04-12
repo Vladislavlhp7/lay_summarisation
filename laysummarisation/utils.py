@@ -1,6 +1,5 @@
 import os
 from random import seed
-
 import numpy as np
 import pandas as pd
 import torch
@@ -40,9 +39,7 @@ def lexrank_summarize(article: str, sentence_count: int = 25) -> str:
     return summary
 
 
-def process_data_to_model_inputs(
-    batch, tokenizer, max_input_length, max_output_length, presummarise=False
-):
+def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_length, pre_summarise=True):
     """
     Tokenize and preprocess a batch of data for use as model inputs.
 
@@ -51,15 +48,15 @@ def process_data_to_model_inputs(
     tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
     max_input_length (int): The maximum length of the input and output sequences after tokenization.
     max_output_length (int): The maximum length of the output sequences after tokenization.
-    presummarise (bool): Whether to presummarise the input data before tokenization.
+    pre_summarise (bool): Whether to pre-summarise the input data before tokenization.
 
     Returns:
     dict: A dictionary containing the preprocessed model inputs for the batch.
     """
 
-    if presummarise:
-        # Use LexRank to summarize the article
-        article_summary = lexrank_summarize(batch["article"])
+    if pre_summarise:
+        # Use LexRank to summarize the articles in a batch
+        article_summary = [lexrank_summarize(article) for article in batch["article"]]
     else:
         article_summary = batch["article"]
 
@@ -150,6 +147,7 @@ def create_article_dataset_dict(
         tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
         max_input_length (int): The maximum length of the input and output sequences after tokenization.
         max_output_length (int): The maximum length of the output sequences after tokenization.
+        pre_summarise (bool): Whether to pre-summarise the input data before tokenization.
 
     Returns:
         DatasetDict: A dictionary containing preprocessed datasets for training and validation.
@@ -172,11 +170,8 @@ def create_article_dataset_dict(
             batched=True,
             batch_size=batch_size,
             remove_columns=["article", "lay_summary", "headings"],
-            fn_kwargs={
-                "tokenizer": tokenizer,
-                "max_input_length": max_input_length,
-                "max_output_length": max_output_length,
-            },
+            fn_kwargs={"tokenizer": tokenizer, "max_input_length": max_input_length,
+                       "max_output_length": max_output_length, "pre_summarise": pre_summarise}
         )
 
         # Set the format of the dataset to be used with PyTorch
@@ -257,10 +252,10 @@ def read_jsonl_data(path):
 
 def lexrank_data(data, max_length=130):
     """
-    Repare the data.
-    :param data: data to be repared
+    Repair the data.
+    :param data: data to be repaired
     :param max_len: max length of the summary
-    :return: repared data
+    :return: repaired data
     """
     summarizer = LexRankSummarizer()
     summaries = []

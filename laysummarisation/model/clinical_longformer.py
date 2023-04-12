@@ -1,3 +1,6 @@
+from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, AutoTokenizer, AutoModelForSeq2SeqLM, LEDForConditionalGeneration
+from longformer_helper import *
+import torch
 # from longformer_helper import *
 import os
 
@@ -22,15 +25,15 @@ def main():
     batch_size = 1  # GPU does not have enough memory for batch_size > 1
     max_input_length = 4096
     max_output_length = 1024
+    pre_summarise = True
 
     model_checkpoint = "yikuan8/Clinical-Longformer"
-    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     path_to_model = "../../Clinical-Longformer"
+    tokenizer = AutoTokenizer.from_pretrained(path_to_model)
     path_to_model = os.path.join(dir_path, path_to_model)
-    model = AutoModelForMaskedLM.from_pretrained(path_to_model)
+    model = LEDForConditionalGeneration.from_pretrained(path_to_model)
     model.to(device)
 
     num_train_epochs = 3
@@ -39,30 +42,33 @@ def main():
     filename = "eLife"
     directory = "../../data/task1_development/"
     directory = os.path.join(dir_path, directory)
-    article_dataset = create_article_dataset_dict(
-        filename, directory, batch_size, tokenizer, max_input_length, max_output_length
-    )
+    article_dataset = create_article_dataset_dict(filename=filename, directory=directory, batch_size=batch_size,
+                                                  tokenizer=tokenizer, max_input_length=max_input_length,
+                                                  max_output_length=max_output_length, pre_summarise=pre_summarise)
 
     output_dir = "../../tmp/"
     output_dir = os.path.join(dir_path, output_dir)
-    args = TrainingArguments(
+    args = Seq2SeqTrainingArguments(
+        predict_with_generate=True,
         output_dir=output_dir,
-        evaluation_strategy="steps",
-        save_strategy="steps",
-        save_steps=1000,
-        eval_steps=1000,
+        evaluation_strategy='steps',
+        save_strategy='steps',
+        logging_steps=250,
+        warmup_steps=1500,
+        save_total_limit=2,
+        gradient_accumulation_steps=4,
         learning_rate=lr,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         num_train_epochs=num_train_epochs,
         weight_decay=0.01,
         load_best_model_at_end=True,
-        metric_for_best_model="rouge2_f",
+        metric_for_best_model='rouge2_f',
         run_name=model_name,
-        report_to=["wandb"],
+        report_to="wandb",
     )
 
-    trainer = Trainer(
+    trainer = Seq2SeqTrainer(
         model=model,
         args=args,
         train_dataset=article_dataset["train"],
