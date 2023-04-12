@@ -136,6 +136,7 @@ def create_article_dataset_dict(
     tokenizer,
     max_input_length: int,
     max_output_length: int,
+    pre_summarise: bool = True,
 ) -> DatasetDict:
     """
     Create a dictionary of preprocessed datasets from article data in a given directory.
@@ -252,9 +253,10 @@ def read_jsonl_data(path):
 
 def lexrank_data(data, max_length=130):
     """
-    Repair the data.
+    Repair the data using lexrank.
+
     :param data: data to be repaired
-    :param max_len: max length of the summary
+    :param max_length: max length of the summary
     :return: repaired data
     """
     summarizer = LexRankSummarizer()

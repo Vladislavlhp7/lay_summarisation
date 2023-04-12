@@ -1,12 +1,8 @@
-from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, AutoTokenizer, AutoModelForSeq2SeqLM, LEDForConditionalGeneration
-from longformer_helper import *
-import torch
-# from longformer_helper import *
 import os
 
 import torch
-from transformers import (AutoModelForMaskedLM, AutoTokenizer, Trainer,
-                          TrainingArguments)
+from transformers import (AutoTokenizer)
+from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, LEDForConditionalGeneration
 
 from laysummarisation.utils import (compute_metrics,
                                     create_article_dataset_dict, set_seed)
