@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import torch
 from datasets import Dataset, DatasetDict
-from rouge import Rouge
+from datasets import load_metric
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
@@ -216,30 +216,42 @@ def set_seed(seed_v: int = 42) -> None:
     print(f"Random seed set as {seed_v}")
 
 
-def compute_metrics(eval_pred) -> dict:
+def compute_metrics(pred, tokenizer):
     """
-    Compute the ROUGE scores for a given set of predictions and labels.
+    Compute Rouge2 Precision, Recall, and F-measure for given predictions and labels.
 
     Args:
-    eval_pred (tuple): A tuple containing two lists of predictions and labels.
+        pred: A NamedTuple containing 'predictions' and 'label_ids' Tensors.
+              'predictions' is a Tensor of predicted token IDs.
+              'label_ids' is a Tensor of the ground truth token IDs.
+        tokenizer: The tokenizer instance used for decoding the predictions and labels.
 
     Returns:
-    dict: A dictionary containing the ROUGE scores for ROUGE-1, ROUGE-2, and ROUGE-L.
+        A dictionary with Rouge2 Precision, Recall, and F-measure.
     """
 
-    # Unpack the tuple into separate lists of predictions and labels
-    predictions, labels = eval_pred
+    # Extract the label IDs and predicted IDs from the input NamedTuple
+    labels_ids = pred.label_ids
+    pred_ids = pred.predictions
 
-    # Compute the ROUGE scores for the predictions and labels using the Rouge package
-    rouge = Rouge()
-    scores = dict(rouge.get_scores(predictions, labels, avg=True))
+    # Load the Rouge metric from the datasets library
+    rouge = load_metric("rouge")
 
-    # Return the ROUGE scores as a dictionary with keys for each metric
+    # Decode the predicted and label IDs to strings, skipping special tokens
+    pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+    labels_ids[labels_ids == -100] = tokenizer.pad_token_id
+    label_str = tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
+
+    # Compute Rouge2 scores for the predictions and labels
+    rouge_output = rouge.compute(predictions=pred_str, references=label_str, rouge_types=["rouge2"])["rouge2"].mid
+
+    # Round the Rouge2 scores to 4 decimal places and return them in a dictionary
     return {
-        "rouge1_f": scores["rouge-1"]["f"],
-        "rouge2_f": scores["rouge-2"]["f"],
-        "rougeL_f": scores["rouge-l"]["f"],
+        "rouge2_precision": round(rouge_output.precision, 4),
+        "rouge2_recall": round(rouge_output.recall, 4),
+        "rouge2_fmeasure": round(rouge_output.fmeasure, 4),
     }
+
 
 
 def read_jsonl_data(path):
