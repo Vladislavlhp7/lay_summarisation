@@ -1,11 +1,11 @@
 import os
 from random import seed
-
+from typing import List
 import numpy as np
 import pandas as pd
 import torch
 from datasets import Dataset, DatasetDict
-from rouge import Rouge
+from datasets import load_metric
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
@@ -40,9 +40,7 @@ def lexrank_summarize(article: str, sentence_count: int = 25) -> str:
     return summary
 
 
-def process_data_to_model_inputs(
-    batch, tokenizer, max_input_length, max_output_length, presummarise=False
-):
+def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_length, pre_summarise=True):
     """
     Tokenize and preprocess a batch of data for use as model inputs.
 
@@ -51,15 +49,15 @@ def process_data_to_model_inputs(
     tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
     max_input_length (int): The maximum length of the input and output sequences after tokenization.
     max_output_length (int): The maximum length of the output sequences after tokenization.
-    presummarise (bool): Whether to presummarise the input data before tokenization.
+    pre_summarise (bool): Whether to pre-summarise the input data before tokenization.
 
     Returns:
     dict: A dictionary containing the preprocessed model inputs for the batch.
     """
 
-    if presummarise:
-        # Use LexRank to summarize the article
-        article_summary = lexrank_summarize(batch["article"])
+    if pre_summarise:
+        # Use LexRank to summarize the articles in a batch
+        article_summary = [lexrank_summarize(article) for article in batch["article"]]
     else:
         article_summary = batch["article"]
 
@@ -146,6 +144,7 @@ def create_article_dataset_dict(
     tokenizer,
     max_input_length: int,
     max_output_length: int,
+    pre_summarise: bool = True,
 ) -> DatasetDict:
     """
     Create a dictionary of preprocessed datasets from article data in a given directory.
@@ -156,6 +155,7 @@ def create_article_dataset_dict(
         tokenizer (PreTrainedTokenizer): A Hugging Face tokenizer object to use for tokenization.
         max_input_length (int): The maximum length of the input and output sequences after tokenization.
         max_output_length (int): The maximum length of the output sequences after tokenization.
+        pre_summarise (bool): Whether to pre-summarise the input data before tokenization.
 
     Returns:
         DatasetDict: A dictionary containing preprocessed datasets for training and validation.
@@ -178,11 +178,8 @@ def create_article_dataset_dict(
             batched=True,
             batch_size=batch_size,
             remove_columns=["article", "lay_summary", "headings"],
-            fn_kwargs={
-                "tokenizer": tokenizer,
-                "max_input_length": max_input_length,
-                "max_output_length": max_output_length,
-            },
+            fn_kwargs={"tokenizer": tokenizer, "max_input_length": max_input_length,
+                       "max_output_length": max_output_length, "pre_summarise": pre_summarise}
         )
 
         # Set the format of the dataset to be used with PyTorch
@@ -226,30 +223,42 @@ def set_seed(seed_v: int = 42) -> None:
     print(f"Random seed set as {seed_v}")
 
 
-def compute_metrics(eval_pred) -> dict:
+def compute_metrics(pred, tokenizer):
     """
-    Compute the ROUGE scores for a given set of predictions and labels.
+    Compute Rouge2 Precision, Recall, and F-measure for given predictions and labels.
 
     Args:
-    eval_pred (tuple): A tuple containing two lists of predictions and labels.
+        pred: A NamedTuple containing 'predictions' and 'label_ids' Tensors.
+              'predictions' is a Tensor of predicted token IDs.
+              'label_ids' is a Tensor of the ground truth token IDs.
+        tokenizer: The tokenizer instance used for decoding the predictions and labels.
 
     Returns:
-    dict: A dictionary containing the ROUGE scores for ROUGE-1, ROUGE-2, and ROUGE-L.
+        A dictionary with Rouge2 Precision, Recall, and F-measure.
     """
 
-    # Unpack the tuple into separate lists of predictions and labels
-    predictions, labels = eval_pred
+    # Extract the label IDs and predicted IDs from the input NamedTuple
+    labels_ids = pred.label_ids
+    pred_ids = pred.predictions
 
-    # Compute the ROUGE scores for the predictions and labels using the Rouge package
-    rouge = Rouge()
-    scores = dict(rouge.get_scores(predictions, labels, avg=True))
+    # Load the Rouge metric from the datasets library
+    rouge = load_metric("rouge")
 
-    # Return the ROUGE scores as a dictionary with keys for each metric
+    # Decode the predicted and label IDs to strings, skipping special tokens
+    pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+    labels_ids[labels_ids == -100] = tokenizer.pad_token_id
+    label_str = tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
+
+    # Compute Rouge2 scores for the predictions and labels
+    rouge_output = rouge.compute(predictions=pred_str, references=label_str, rouge_types=["rouge2"])["rouge2"].mid
+
+    # Round the Rouge2 scores to 4 decimal places and return them in a dictionary
     return {
-        "rouge1_f": scores["rouge-1"]["f"],
-        "rouge2_f": scores["rouge-2"]["f"],
-        "rougeL_f": scores["rouge-l"]["f"],
+        "rouge2_precision": round(rouge_output.precision, 4),
+        "rouge2_recall": round(rouge_output.recall, 4),
+        "rouge2_fmeasure": round(rouge_output.fmeasure, 4),
     }
+
 
 
 def read_jsonl_data(path):
@@ -263,10 +272,11 @@ def read_jsonl_data(path):
 
 def lexrank_data(data, max_length=130):
     """
-    Repare the data.
-    :param data: data to be repared
-    :param max_len: max length of the summary
-    :return: repared data
+    Repair the data using lexrank.
+
+    :param data: data to be repaired
+    :param max_length: max length of the summary
+    :return: repaired data
     """
     summarizer = LexRankSummarizer()
     summaries = []
@@ -275,3 +285,114 @@ def lexrank_data(data, max_length=130):
         summary = summarizer(parser.document, max_length)
         summaries.append(summary)
     return summaries
+
+def rouge_maximise(corpus, sentence):
+    """
+    Compute the rouge f1 metric for each sentence in the corpus and return the array
+    of scores.
+    """
+    scores = []
+    rouge = Rouge()
+    for i, c in enumerate(corpus):
+        scores.append(rouge.get_scores(c, sentence, avg=True)["rouge-l"]["f"])
+    return np.array(scores)
+
+def rouge_lay_sent(corpus: List[str], lay: List[str]):
+    """
+    Compute the rouge metric for each sentence in the lay, for each sentence in the summary
+    """
+    scores = []
+    for l in lay:
+        scores.append(rouge_maximise(corpus, l))
+    return scores
+
+def remove_full_stop_after_et_al(text: str) -> str:
+    return re.sub(r'(et al) \.', r'\1', text)
+
+def merge_sets_preserving_order(set1, set2):
+    seen = set()
+    merged_list = []
+
+    for item in (set1 | set2):
+        if item in set1 and item not in seen:
+            merged_list.append(item)
+            seen.add(item)
+        if item in set2 and item not in seen:
+            merged_list.append(item)
+            seen.add(item)
+
+    return merged_list
+
+if __name__ == "__main__":
+
+    with open("tmp.txt", "r") as f:
+        text = f.read()
+
+    data = pd.read_json("data/orig/train/eLife_train.jsonl", lines=True, nrows=1)
+    point = data.iloc[0]
+    r = Rouge()
+
+    rl = r.get_scores(text, point.lay_summary, avg=True)
+    print(rl)
+    
+
+    # import nltk
+    # from nltk import sent_tokenize
+    # import re
+    # nltk.download("punkt")
+    # from time import time
+    # point = data.iloc[1]
+
+    # article = "\n".join(point.article.split("\n")[1:])
+    # article = remove_full_stop_after_et_al(article)
+    # laysum = remove_full_stop_after_et_al(point.lay_summary)
+
+    # art_sent = list(filter(lambda x: x.strip() != "", sent_tokenize(article)))
+
+    # start = time()
+    # rl = rouge_maximise(art_sent, point.lay_summary)
+    # rl2 = rouge_lay_sent(art_sent, sent_tokenize(laysum))
+    # end = time()
+
+    # print(f"Time taken: {end - start}")
+
+    # rl = list(enumerate(rl))
+    # rl_sort = sorted(rl, reverse=True, key=lambda x: x[1])
+    # rl2_sort = [sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2]
+
+    # print(point.lay_summary)
+    # print("----------")
+    # print("----------")
+    # print("----------")
+
+    # rl_i = sorted([i for i, _ in rl_sort[:10]])
+    # rl2_i = sorted([i for i, _ in rl2_sort[:10]])
+    # merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
+
+    # for s in sorted(merged_list):
+    #     print(art_sent[s])
+
+    # print("----------")
+    # print("----------")
+    # print("----------")
+
+    # r = Rouge()
+    # print(r.get_scores(" ".join([art_sent[x] for x in sorted(merged_list)]), laysum, avg=True))
+    
+
+    # # best_sents_rl = [art_sent[i] for i, _ in rl_sort[:10]]
+    # # best_sents_rl2 = [art_sent[i] for i, _ in rl2_sort[:10]]
+
+    # # print(merge_sets_preserving_order(best_sents_rl, best_sents_rl2))
+
+    # # for i, v in enumerate(rl_sort[:10]):
+    # #     print("----------")
+    # #     print(art_sent[i])
+    # #     print("----------")
+
+    # # for i, r in enumerate(rl):
+    # #     bs = max(r, key=lambda x: x[1])
+    # #     print("----------")
+    # #     print(lay_sent[i])
+    # #     print(art_sent[int(bs[0])])
+    # #     print("----------")
