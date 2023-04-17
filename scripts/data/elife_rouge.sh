@@ -1,4 +1,4 @@
 #!/bin/bash
 
 export CORPUS=eLife
-./scripts/data/process.sh
+./scripts/data/rouge.sh

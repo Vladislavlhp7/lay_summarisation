@@ -1,10 +1,15 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 
+from pandarallel import pandarallel
 from transformers import HfArgumentParser
 import pandas as pd
+import numpy as np
+from rouge import Rouge
+import nltk
+from nltk import sent_tokenize
 
-from laysummarisation.utils import lexrank_summarize, load_jsonl_pandas
+from laysummarisation.utils import load_jsonl_pandas, remove_full_stop_after_et_al
 
 
 @dataclass
@@ -19,13 +24,21 @@ class Arguments:
     output: str = field(
         metadata={"help": "The output mrp file path"},
     )
-    rouge_sent: Optional[int] = field(
-        default=25,
+    nsent: Optional[int] = field(
+        default=10,
         metadata={"help": "The number of sentences to extract from the article."},
     )
     nrows: Optional[int] = field(
         default=None,
-        metadata={"help": "The number of entries to process."},
+        metadata={"help": "The number of entries to process. (0 for all)"},
+    )
+    mode: Optional[str] = field(
+        default="split",
+        metadata={"help": "The mode to run the script in."},
+    )
+    workers: Optional[int] = field(
+        default=1,
+        metadata={"help": "The number of workers to use."},
     )
 
 
@@ -50,26 +63,53 @@ def rouge_lay_sent(corpus: List[str], lay: List[str]):
         scores.append(rouge_maximise(corpus, l))
     return scores
 
+def remove_abstract(article: str):
+    """
+    Remove the abstract from an article (anything before first newline).
+    """
+    return "\n".join(article.split("\n")[1:])
+
+def process_entry(entry: pd.Series, conf: Arguments):
+    """
+    Process a single entry from the dataset.
+    """
+    entry.article = remove_full_stop_after_et_al(entry.article)
+    entry.lay_summary = remove_full_stop_after_et_al(entry.lay_summary)
+    art_sent = list(filter(lambda x: x.strip() != "", sent_tokenize(entry.article)))
+    lay_sent = list(filter(lambda x: x.strip() != "", sent_tokenize(entry.lay_summary)))
+
+    rl = rouge_maximise(art_sent, entry.lay_summary)
+    rl2 = rouge_lay_sent(art_sent, lay_sent)
+
+    rl_sort = sorted(enumerate(rl), reverse=True, key=lambda x: x[1])
+    rl2_sort = [sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2]
+
+    rl_i = sorted([i for i, _ in rl_sort[:conf.nsent]])
+    rl2_i = sorted([i for i, _ in rl2_sort[:conf.nsent]])
+    merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
+
+    return "".join([art_sent[x] for x in sorted(merged_list)])
+
 
 def main(conf: Arguments):
-    # raise NotImplementedError("Rouge maximisation preprocessing not implemented yet")
+
+    pandarallel.initialize(conf.workers)
+
     # Load files
     print("Loading files...")
     data = load_jsonl_pandas(conf.fname, nrows=conf.nrows)
 
-    # LexRank summarise the articles
-    print("Summarising articles...")
-    data["article"] = data["article"].apply(rouge_summarize, args=(conf.rouge_sent,))
+    # Set the mode, either 'split' for split abstract and append it
+    # or 'include' to include the abstract when summarising.
+    if conf.mode == "split":
+        data["article"] = data.parallel_apply(lambda x: remove_abstract(x.article), axis=1)
+    elif conf.mode == "include":
+        pass
+    else:
+        raise ValueError("Invalid mode")
 
-    with open("tmp.txt", "r") as f:
-        text = f.read()
+    data["article"] = data.parallel_apply(lambda x: process_entry(x, conf), axis=1)
 
-    data = pd.read_json("data/orig/train/eLife_train.jsonl", lines=True, nrows=1)
-    point = data.iloc[0]
-    r = Rouge()
-
-    rl = r.get_scores(text, point.lay_summary, avg=True)
-    print(rl)
     # Save the data
     print("Saving data...")
     data.to_json(conf.output, orient="records", lines=True)
@@ -77,6 +117,11 @@ def main(conf: Arguments):
 
 
 if __name__ == "__main__":
+    nltk.download("punkt")
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
+    if conf.nrows == 0:
+        conf.nrows = None
+
     main(conf)
+

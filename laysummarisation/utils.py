@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 from datasets import Dataset, DatasetDict
-from datasets import load_metric
+import evaluate
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
@@ -242,7 +242,7 @@ def compute_metrics(pred, tokenizer):
     pred_ids = pred.predictions
 
     # Load the Rouge metric from the datasets library
-    rouge = load_metric("rouge")
+    rouge = evaluate.load("rouge")
 
     # Decode the predicted and label IDs to strings, skipping special tokens
     pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
