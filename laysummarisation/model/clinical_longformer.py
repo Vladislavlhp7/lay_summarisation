@@ -1,11 +1,7 @@
 import os
-
 import torch
-from transformers import (AutoTokenizer)
-from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, LEDForConditionalGeneration
-
-from laysummarisation.utils import (compute_metrics,
-                                    create_article_dataset_dict, set_seed)
+from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, LEDForConditionalGeneration, AutoTokenizer
+from laysummarisation.utils import (compute_metrics, create_article_dataset_dict, set_seed)
 
 
 def main():
@@ -17,23 +13,30 @@ def main():
     os.environ["WANDB_PROJECT"] = "laysummarisation"
     os.environ["WANDB_LOG_MODEL"] = "true"
 
+    # Training hyperparameters
     lr = 3e-5  # from paper
     batch_size = 1  # GPU does not have enough memory for batch_size > 1
     max_input_length = 4096
     max_output_length = 1024
     pre_summarise = True
-
-    model_checkpoint = "yikuan8/Clinical-Longformer"
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    path_to_model = "../../Clinical-Longformer"
-    tokenizer = AutoTokenizer.from_pretrained(path_to_model)
-    path_to_model = os.path.join(dir_path, path_to_model)
-    model = LEDForConditionalGeneration.from_pretrained(path_to_model)
-    model.to(device)
-
     num_train_epochs = 3
+
+    # Naming and paths
+    model_checkpoint = "yikuan8/Clinical-Longformer"
     model_name = model_checkpoint.split("/")[-1]
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    path_to_model = "../../Clinical-Longformer"
+
+    tokenizer = AutoTokenizer.from_pretrained(path_to_model)
+    model = LEDForConditionalGeneration.from_pretrained(path_to_model)
+    # Set Generation hyperparameters
+    model.config.num_beams = 4
+    model.config.max_length = 512
+    model.config.min_length = 100
+    model.config.length_penalty = 2.0
+    model.config.early_stopping = True
+    model.config.no_repeat_ngram_size = 3
+    model.to(device)
 
     filename = "eLife"
     directory = "../../data/task1_development/"
@@ -47,8 +50,8 @@ def main():
     args = Seq2SeqTrainingArguments(
         predict_with_generate=True,
         output_dir=output_dir,
-        evaluation_strategy='steps',
-        save_strategy='steps',
+        evaluation_strategy="steps",
+        save_strategy="steps",
         logging_steps=250,
         warmup_steps=1500,
         save_total_limit=2,
@@ -59,7 +62,6 @@ def main():
         num_train_epochs=num_train_epochs,
         weight_decay=0.01,
         load_best_model_at_end=True,
-        metric_for_best_model='rouge2_f',
         run_name=model_name,
         report_to="wandb",
     )
