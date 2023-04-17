@@ -10,5 +10,5 @@ source activate nlu
 
 chmod +x ./scripts/**/*.sh
 
-./scripts/install.sh
+./scripts/setup_all.sh
 

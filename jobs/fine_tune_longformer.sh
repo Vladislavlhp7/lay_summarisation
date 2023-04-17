@@ -15,4 +15,5 @@ export OMP_NUM_THREADS=$NSLOTS
 
 #! pip install datasets
 
-python3 ../laysummarisation/model/train.py
+./scripts/train/elife.sh
+

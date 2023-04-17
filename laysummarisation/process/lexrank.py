@@ -1,6 +1,3 @@
-# Copyright 2022 by Hitachi, Ltd.
-# All rights reserved.
-
 from dataclasses import dataclass, field
 from typing import Optional
 
