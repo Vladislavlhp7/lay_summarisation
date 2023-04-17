@@ -29,6 +29,7 @@ class Arguments:
 
 
 def main(conf: Arguments):
+    raise NotImplementedError("Rouge maximisation preprocessing not implemented yet")
     # Load files
     print("Loading files...")
     data = load_jsonl_pandas(conf.fname, nrows=conf.entries)
