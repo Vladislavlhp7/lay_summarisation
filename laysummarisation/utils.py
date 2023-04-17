@@ -1,5 +1,6 @@
 import os
 from random import seed
+from typing import List
 import numpy as np
 import pandas as pd
 import torch
@@ -266,3 +267,114 @@ def lexrank_data(data, max_length=130):
         summary = summarizer(parser.document, max_length)
         summaries.append(summary)
     return summaries
+
+def rouge_maximise(corpus, sentence):
+    """
+    Compute the rouge f1 metric for each sentence in the corpus and return the array
+    of scores.
+    """
+    scores = []
+    rouge = Rouge()
+    for i, c in enumerate(corpus):
+        scores.append(rouge.get_scores(c, sentence, avg=True)["rouge-l"]["f"])
+    return np.array(scores)
+
+def rouge_lay_sent(corpus: List[str], lay: List[str]):
+    """
+    Compute the rouge metric for each sentence in the lay, for each sentence in the summary
+    """
+    scores = []
+    for l in lay:
+        scores.append(rouge_maximise(corpus, l))
+    return scores
+
+def remove_full_stop_after_et_al(text: str) -> str:
+    return re.sub(r'(et al) \.', r'\1', text)
+
+def merge_sets_preserving_order(set1, set2):
+    seen = set()
+    merged_list = []
+
+    for item in (set1 | set2):
+        if item in set1 and item not in seen:
+            merged_list.append(item)
+            seen.add(item)
+        if item in set2 and item not in seen:
+            merged_list.append(item)
+            seen.add(item)
+
+    return merged_list
+
+if __name__ == "__main__":
+
+    with open("tmp.txt", "r") as f:
+        text = f.read()
+
+    data = pd.read_json("data/orig/train/eLife_train.jsonl", lines=True, nrows=1)
+    point = data.iloc[0]
+    r = Rouge()
+
+    rl = r.get_scores(text, point.lay_summary, avg=True)
+    print(rl)
+    
+
+    # import nltk
+    # from nltk import sent_tokenize
+    # import re
+    # nltk.download("punkt")
+    # from time import time
+    # point = data.iloc[1]
+
+    # article = "\n".join(point.article.split("\n")[1:])
+    # article = remove_full_stop_after_et_al(article)
+    # laysum = remove_full_stop_after_et_al(point.lay_summary)
+
+    # art_sent = list(filter(lambda x: x.strip() != "", sent_tokenize(article)))
+
+    # start = time()
+    # rl = rouge_maximise(art_sent, point.lay_summary)
+    # rl2 = rouge_lay_sent(art_sent, sent_tokenize(laysum))
+    # end = time()
+
+    # print(f"Time taken: {end - start}")
+
+    # rl = list(enumerate(rl))
+    # rl_sort = sorted(rl, reverse=True, key=lambda x: x[1])
+    # rl2_sort = [sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2]
+
+    # print(point.lay_summary)
+    # print("----------")
+    # print("----------")
+    # print("----------")
+
+    # rl_i = sorted([i for i, _ in rl_sort[:10]])
+    # rl2_i = sorted([i for i, _ in rl2_sort[:10]])
+    # merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
+
+    # for s in sorted(merged_list):
+    #     print(art_sent[s])
+
+    # print("----------")
+    # print("----------")
+    # print("----------")
+
+    # r = Rouge()
+    # print(r.get_scores(" ".join([art_sent[x] for x in sorted(merged_list)]), laysum, avg=True))
+    
+
+    # # best_sents_rl = [art_sent[i] for i, _ in rl_sort[:10]]
+    # # best_sents_rl2 = [art_sent[i] for i, _ in rl2_sort[:10]]
+
+    # # print(merge_sets_preserving_order(best_sents_rl, best_sents_rl2))
+
+    # # for i, v in enumerate(rl_sort[:10]):
+    # #     print("----------")
+    # #     print(art_sent[i])
+    # #     print("----------")
+
+    # # for i, r in enumerate(rl):
+    # #     bs = max(r, key=lambda x: x[1])
+    # #     print("----------")
+    # #     print(lay_sent[i])
+    # #     print(art_sent[int(bs[0])])
+    # #     print("----------")
