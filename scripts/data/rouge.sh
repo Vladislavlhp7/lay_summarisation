@@ -6,7 +6,6 @@ MODEL=./weights/Clinical-Longformer
 SEED=42
 
 mkdir -p ${SEED_DIR}
-rm -rf ${SEED_DIR}/*
 
 python -m laysummarisation.process.rouge \
     --fname ./data/orig/train/${CORPUS}_train.jsonl \
@@ -14,4 +13,4 @@ python -m laysummarisation.process.rouge \
     --nsent 10 \
     --mode "split" \
     --workers 2 \
-    --nrows 0
+    --nrows 2

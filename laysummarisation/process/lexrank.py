@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from transformers import HfArgumentParser
+from pandarallel import pandarallel
 
 from laysummarisation.utils import lexrank_summarize, load_jsonl_pandas
 
@@ -22,20 +23,26 @@ class Arguments:
         default=25,
         metadata={"help": "The number of sentences to extract from the article."},
     )
-    entries: Optional[int] = field(
+    nrows: Optional[int] = field(
         default=None,
         metadata={"help": "The number of entries to process."},
+    )
+    workers: Optional[int] = field(
+        default=1,
+        metadata={"help": "The number of workers to use."},
     )
 
 
 def main(conf: Arguments):
+    pandarallel.initialize(conf.workers)
+
     # Load files
     print("Loading files...")
-    data = load_jsonl_pandas(conf.fname, nrows=conf.entries)
+    data = load_jsonl_pandas(conf.fname, nrows=conf.nrows)
 
     # LexRank summarise the articles
     print("Summarising articles...")
-    data["article"] = data["article"].apply(lexrank_summarize)
+    data["article"] = data["article"].parallel_apply(lexrank_summarize)
 
     # Save the data
     print("Saving data...")
@@ -46,4 +53,7 @@ def main(conf: Arguments):
 if __name__ == "__main__":
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
+    if conf.nrows == 0:
+        conf.nrows = None
+
     main(conf)
