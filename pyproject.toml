@@ -13,8 +13,8 @@ readme = "README.md"
 python = "^3.8"
 transformers = "^4.26.1"
 pandas = "^1.5.3"
-torch = "^2.0.0"
-torchtext = "^0.15.1"
+datasets = "^2.11.0"
+torch = "1.11.0"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0.0"
