@@ -13,6 +13,6 @@ module load compilers/gcc/9.3.0
 
 export OMP_NUM_THREADS=$NSLOTS
 
-! pip install datasets
+#! pip install datasets
 
 python3 ../laysummarisation/model/clinical_longformer.py

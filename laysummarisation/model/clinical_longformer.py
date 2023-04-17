@@ -1,11 +1,7 @@
 import os
-
 import torch
-from transformers import (AutoTokenizer)
-from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, LEDForConditionalGeneration
-
-from laysummarisation.utils import (compute_metrics,
-                                    create_article_dataset_dict, set_seed)
+from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, LEDForConditionalGeneration, AutoTokenizer
+from laysummarisation.utils import (compute_metrics, create_article_dataset_dict, set_seed)
 
 
 def main():
