@@ -1,65 +1,72 @@
-# from longformer_helper import *
 import os
-
 import torch
-from transformers import (AutoModelForMaskedLM, AutoTokenizer,
-                          HfArgumentParser, Trainer, TrainingArguments)
-
-from laysummarisation.config import LFParserConfig
-from laysummarisation.utils import (compute_metrics,
-                                    create_article_dataset_dict, set_seed)
+from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, LEDForConditionalGeneration, AutoTokenizer
+from laysummarisation.utils import (compute_metrics, create_article_dataset_dict, set_seed)
 
 
-def train(config):
-    if config.device == "gpu":
-        torch.cuda.empty_cache()
-    set_seed(config.seed)
+def main():
+    print("CUDA available:" + str(torch.cuda.is_available()))
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    torch.cuda.empty_cache()
+    set_seed(42)
 
     os.environ["WANDB_PROJECT"] = "laysummarisation"
     os.environ["WANDB_LOG_MODEL"] = "true"
 
-    # lr = 3e-5  # from paper
-    # batch_size = 1  # GPU does not have enough memory for batch_size > 1
-    # max_input_length = 4096
-    # max_output_length = 1024
+    # Training hyperparameters
+    lr = 3e-5  # from paper
+    batch_size = 1  # GPU does not have enough memory for batch_size > 1
+    max_input_length = 4096
+    max_output_length = 1024
+    pre_summarise = True
+    num_train_epochs = 3
 
-    tokenizer = AutoTokenizer.from_pretrained(config.model_checkpoint)
-
+    # Naming and paths
+    model_checkpoint = "yikuan8/Clinical-Longformer"
+    model_name = model_checkpoint.split("/")[-1]
     dir_path = os.path.dirname(os.path.realpath(__file__))
-
     path_to_model = "../../Clinical-Longformer"
-    path_to_model = os.path.join(dir_path, path_to_model)
-    model = AutoModelForMaskedLM.from_pretrained(path_to_model)
-    model.to(config.device)
 
-    model_name = config.model_checkpoint.split("/")[-1]
+    tokenizer = AutoTokenizer.from_pretrained(path_to_model)
+    model = LEDForConditionalGeneration.from_pretrained(path_to_model)
+    # Set Generation hyperparameters
+    model.config.num_beams = 4
+    model.config.max_length = 512
+    model.config.min_length = 100
+    model.config.length_penalty = 2.0
+    model.config.early_stopping = True
+    model.config.no_repeat_ngram_size = 3
+    model.to(device)
 
-    article_dataset = create_article_dataset_dict(
-        config.ftrain,
-        config.batch_size,
-        tokenizer,
-        config.max_encode,
-        config.max_decode,
-    )
+    filename = "eLife"
+    directory = "../../data/task1_development/"
+    directory = os.path.join(dir_path, directory)
+    article_dataset = create_article_dataset_dict(filename=filename, directory=directory, batch_size=batch_size,
+                                                  tokenizer=tokenizer, max_input_length=max_input_length,
+                                                  max_output_length=max_output_length, pre_summarise=pre_summarise)
 
-    args = TrainingArguments(
-        output_dir=config.output_dir,
+    output_dir = "../../tmp/"
+    output_dir = os.path.join(dir_path, output_dir)
+    args = Seq2SeqTrainingArguments(
+        predict_with_generate=True,
+        output_dir=output_dir,
         evaluation_strategy="steps",
         save_strategy="steps",
-        save_steps=config.save_steps,
-        eval_steps=config.eval_steps,
-        learning_rate=config.lr,
-        per_device_train_batch_size=config.batch_size,
-        per_device_eval_batch_size=config.batch_size,
-        num_train_epochs=config.epochs,
-        weight_decay=config.weight_decay,
+        logging_steps=250,
+        warmup_steps=1500,
+        save_total_limit=2,
+        gradient_accumulation_steps=4,
+        learning_rate=lr,
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size,
+        num_train_epochs=num_train_epochs,
+        weight_decay=0.01,
         load_best_model_at_end=True,
-        metric_for_best_model=config.metric,
         run_name=model_name,
-        report_to=["wandb"],
+        report_to="wandb",
     )
 
-    trainer = Trainer(
+    trainer = Seq2SeqTrainer(
         model=model,
         args=args,
         train_dataset=article_dataset["train"],
@@ -68,12 +75,6 @@ def train(config):
     )
 
     trainer.train()
-
-
-def main():
-    parser = HfArgumentParser(LFParserConfig)
-    train(parser.parse_args_into_dataclasses())
-    exit()
 
 
 if __name__ == "__main__":
