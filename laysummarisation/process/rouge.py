@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import List, Optional
 
-from pandarallel import pandarallel
-from transformers import HfArgumentParser
-import pandas as pd
-import numpy as np
-from rouge import Rouge
 import nltk
+import numpy as np
+import pandas as pd
 from nltk import sent_tokenize
+from pandarallel import pandarallel
+from rouge import Rouge
+from transformers import HfArgumentParser
 
 from laysummarisation.utils import load_jsonl_pandas, remove_full_stop_after_et_al
 
@@ -49,8 +49,8 @@ def rouge_maximise(corpus, sentence):
     """
     scores = []
     rouge = Rouge()
-    for i, c in enumerate(corpus):
-        scores.append(rouge.get_scores(c, sentence, avg=True)["rouge-l"]["f"])
+    for c in corpus:
+        scores.append(dict(rouge.get_scores(c, sentence, avg=True))["rouge-l"]["f"])
     return np.array(scores)
 
 
@@ -59,15 +59,17 @@ def rouge_lay_sent(corpus: List[str], lay: List[str]):
     Compute the rouge metric for each sentence in the lay, for each sentence in the summary
     """
     scores = []
-    for l in lay:
-        scores.append(rouge_maximise(corpus, l))
+    for sent in lay:
+        scores.append(rouge_maximise(corpus, sent))
     return scores
+
 
 def remove_abstract(article: str):
     """
     Remove the abstract from an article (anything before first newline).
     """
     return "\n".join(article.split("\n")[1:])
+
 
 def process_entry(entry: pd.Series, conf: Arguments):
     """
@@ -84,15 +86,14 @@ def process_entry(entry: pd.Series, conf: Arguments):
     rl_sort = sorted(enumerate(rl), reverse=True, key=lambda x: x[1])
     rl2_sort = [sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2]
 
-    rl_i = sorted([i for i, _ in rl_sort[:conf.nsent]])
-    rl2_i = sorted([i for i, _ in rl2_sort[:conf.nsent]])
+    rl_i = sorted([i for i, _ in rl_sort[: conf.nsent]])
+    rl2_i = sorted([i for i, _ in rl2_sort[: conf.nsent]])
     merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
 
     return "".join([art_sent[x] for x in sorted(merged_list)])
 
 
 def main(conf: Arguments):
-
     pandarallel.initialize(conf.workers)
 
     # Load files
@@ -102,7 +103,9 @@ def main(conf: Arguments):
     # Set the mode, either 'split' for split abstract and append it
     # or 'include' to include the abstract when summarising.
     if conf.mode == "split":
-        data["article"] = data.parallel_apply(lambda x: remove_abstract(x.article), axis=1)
+        data["article"] = data.parallel_apply(
+            lambda x: remove_abstract(x.article), axis=1
+        )
     elif conf.mode == "include":
         pass
     else:
@@ -124,4 +127,3 @@ if __name__ == "__main__":
         conf.nrows = None
 
     main(conf)
-

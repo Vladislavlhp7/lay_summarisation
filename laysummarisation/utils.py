@@ -1,11 +1,13 @@
 import os
 import re
 from random import seed
+from typing import Dict
+
+import evaluate
 import numpy as np
 import pandas as pd
 import torch
 from datasets import Dataset, DatasetDict
-import evaluate
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
@@ -40,7 +42,9 @@ def lexrank_summarize(article: str, sentence_count: int = 25) -> str:
     return summary
 
 
-def process_data_to_model_inputs(batch, tokenizer, max_input_length, max_output_length, pre_summarise=True):
+def process_data_to_model_inputs(
+    batch, tokenizer, max_input_length, max_output_length, pre_summarise=True
+):
     """
     Tokenize and preprocess a batch of data for use as model inputs.
 
@@ -178,8 +182,12 @@ def create_article_dataset_dict(
             batched=True,
             batch_size=batch_size,
             remove_columns=["article", "lay_summary", "headings"],
-            fn_kwargs={"tokenizer": tokenizer, "max_input_length": max_input_length,
-                       "max_output_length": max_output_length, "pre_summarise": pre_summarise}
+            fn_kwargs={
+                "tokenizer": tokenizer,
+                "max_input_length": max_input_length,
+                "max_output_length": max_output_length,
+                "pre_summarise": pre_summarise,
+            },
         )
 
         # Set the format of the dataset to be used with PyTorch
@@ -223,7 +231,7 @@ def set_seed(seed_v: int = 42) -> None:
     print(f"Random seed set as {seed_v}")
 
 
-def compute_metrics(pred, tokenizer):
+def compute_metrics(pred, tokenizer) -> Dict[str, float]:
     """
     Compute Rouge2 Precision, Recall, and F-measure for given predictions and labels.
 
@@ -250,7 +258,9 @@ def compute_metrics(pred, tokenizer):
     label_str = tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
 
     # Compute Rouge2 scores for the predictions and labels
-    rouge_output = rouge.compute(predictions=pred_str, references=label_str, rouge_types=["rouge2"])["rouge2"].mid
+    rouge_output = rouge.compute(
+        predictions=pred_str, references=label_str, rouge_types=["rouge2"]
+    )["rouge2"].mid
 
     # Round the Rouge2 scores to 4 decimal places and return them in a dictionary
     return {
@@ -258,7 +268,6 @@ def compute_metrics(pred, tokenizer):
         "rouge2_recall": round(rouge_output.recall, 4),
         "rouge2_fmeasure": round(rouge_output.fmeasure, 4),
     }
-
 
 
 def read_jsonl_data(path):
@@ -286,8 +295,10 @@ def lexrank_data(data, max_length=130):
         summaries.append(summary)
     return summaries
 
+
 def remove_full_stop_after_et_al(text: str) -> str:
-    return re.sub(r'(et al) \.', r'\1', text)
+    return re.sub(r"(et al) \.", r"\1", text)
+
 
 if __name__ == "__main__":
     pass
