@@ -27,7 +27,7 @@ def preprocess(text):
     """
     text = remove_full_stop_after_et_al(text)
     text = re.sub(r"\s+", " ", text)  # Replace multiple spaces with a single space
-    regex = re.compile(r'\.([A-Za-z])')
+    regex = re.compile(r'\.([A-Z][a-z])')
     text = regex.sub(r'. \1', text)  # Add space after full stop. Important for sentence tokenization
     return text
 
@@ -329,7 +329,7 @@ def lexrank_data(data, max_length=130):
 
 
 def remove_full_stop_after_et_al(text: str) -> str:
-    return re.sub(r"(et al) \.", r"\1", text)
+    return re.sub(r"(et al) \. (?![A-Z][a-z])", r"\1", text)
 
 
 if __name__ == "__main__":
