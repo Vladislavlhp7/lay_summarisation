@@ -26,7 +26,9 @@ def preprocess(text):
         str: The preprocessed text.
     """
     text = remove_full_stop_after_et_al(text)
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s+", " ", text)  # Replace multiple spaces with a single space
+    regex = re.compile(r'\.([A-Za-z])')
+    text = regex.sub(r'. \1', text)  # Add space after full stop. Important for sentence tokenization
     return text
 
 def sentence_tokenize(text):
