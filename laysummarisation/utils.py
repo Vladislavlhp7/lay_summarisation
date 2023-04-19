@@ -12,6 +12,34 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
+from nltk import sent_tokenize
+
+
+def preprocess(text):
+    """
+    Preprocess a string of text.
+
+    Args:
+        text (str): The text to preprocess.
+
+    Returns:
+        str: The preprocessed text.
+    """
+    text = remove_full_stop_after_et_al(text)
+    text = re.sub(r"\s+", " ", text)
+    return text
+
+def sentence_tokenize(text):
+    """
+    Tokenize a string of text into sentences.
+
+    Args:
+        text (str): The text to tokenize.
+
+    Returns:
+        list: A list of sentences.
+    """
+    return list(filter(lambda x: x.strip() != "", sent_tokenize(text)))
 
 
 def lexrank_summarize(article: str, sentence_count: int = 25) -> str:

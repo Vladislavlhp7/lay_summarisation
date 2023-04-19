@@ -9,7 +9,7 @@ from pandarallel import pandarallel
 from rouge import Rouge
 from transformers import HfArgumentParser
 
-from laysummarisation.utils import load_jsonl_pandas, remove_full_stop_after_et_al
+from laysummarisation.utils import load_jsonl_pandas, preprocess, sentence_tokenize
 
 
 @dataclass
@@ -75,10 +75,10 @@ def process_entry(entry: pd.Series, conf: Arguments):
     """
     Process a single entry from the dataset.
     """
-    entry.article = remove_full_stop_after_et_al(entry.article)
-    entry.lay_summary = remove_full_stop_after_et_al(entry.lay_summary)
-    art_sent = list(filter(lambda x: x.strip() != "", sent_tokenize(entry.article)))
-    lay_sent = list(filter(lambda x: x.strip() != "", sent_tokenize(entry.lay_summary)))
+    entry.article = preprocess(entry.article)
+    entry.lay_summary = preprocess(entry.lay_summary)
+    art_sent = sentence_tokenize(entry.article)
+    lay_sent = sentence_tokenize(entry.lay_summary)
 
     rl = rouge_maximise(art_sent, entry.lay_summary)
     rl2 = rouge_lay_sent(art_sent, lay_sent)
