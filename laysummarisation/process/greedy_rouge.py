@@ -89,7 +89,7 @@ def process_entry(entry: pd.Series, conf: Arguments):
     rl2_i = sorted([i for i, _ in rl2_sort[: conf.nsent]])
     merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
 
-    return "".join([art_sent[x] for x in sorted(merged_list)])
+    return " ".join([art_sent[x] for x in sorted(merged_list)])
 
 
 def main(conf: Arguments):
