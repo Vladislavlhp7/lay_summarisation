@@ -11,8 +11,6 @@ module load apps/binapps/anaconda3/2021.11  # Python 3.9.7
 module load libs/nvidia-hpc-sdk/23.1
 module load compilers/gcc/9.3.0
 
-export OMP_NUM_THREADS=$NSLOTS
-
 SEED_DIR=./data/input
 MODEL=./weights/Clinical-Longformer
 SEED=42
