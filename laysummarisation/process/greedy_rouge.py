@@ -4,12 +4,11 @@ from typing import List, Optional
 import nltk
 import numpy as np
 import pandas as pd
-from nltk import sent_tokenize
 from pandarallel import pandarallel
-from rouge import Rouge
 from transformers import HfArgumentParser
 
 from laysummarisation.utils import load_jsonl_pandas, preprocess, sentence_tokenize
+from rouge import Rouge
 
 
 @dataclass
