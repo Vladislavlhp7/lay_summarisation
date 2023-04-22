@@ -16,6 +16,70 @@ from process.greedy_rouge import process_entry, Arguments
 from utils import set_seed
 
 
+def get_binary_label_dataset(df: pd.DataFrame, tokenizer: BertTokenizerFast, device: str, check_consistency = False):
+    """
+    Get the dataset with the binary labels for each sentence in the article.
+
+    :param df: The dataframe with the pseudo summary and the whole article
+    :param tokenizer: The tokenizer to use
+    :param device: The device to use
+    :param check_consistency: Check if the pseudo summary is in the article (i.e., if preprocessing works correctly)
+    :return: The dataset with the binary labels
+    """
+    # Store all article's sentences and their binary labels
+    # (1 if the sentence is in the pseudo summary, 0 otherwise)
+    article_sents = []
+    article_sents_binary = []
+    for i, row in tqdm(df.iterrows(), desc="Binary sentence extraction"):
+        id_ = row['id']
+        pseudo_summary = row['article']
+        article_whole = row['article_whole']
+
+        # Prepare for sentence tokenization
+        pseudo_summary = preprocess(pseudo_summary)
+        article_whole = preprocess(article_whole)
+
+        # Tokenize sentences
+        pseudo_summary_sents = sentence_tokenize(pseudo_summary)
+        article_whole_sents = sentence_tokenize(article_whole)
+
+        # Report sentence sizes
+        print(f'ID: {id_}', end=' | ')
+        print(f'Pseudo summary: {len(pseudo_summary_sents)}', end=' | ')
+        print(f'Whole article: {len(article_whole_sents)}')
+
+        if check_consistency:
+            for sent in pseudo_summary_sents:
+                if sent in article_whole_sents:
+                    article_sents_binary.append(1)
+                else:
+                    article_sents_binary.append(0)
+                    print("Sentence not found in article:", sent)
+            print("--------")
+
+        # Find the sentences that are in the pseudo summary
+        for sent in article_whole_sents:
+            article_sents.append(sent)
+            if sent in pseudo_summary_sents:
+                article_sents_binary.append(1)
+            else:
+                article_sents_binary.append(0)
+
+    # Tokenize the sentences
+    encoded = tokenizer(article_sents, truncation=True, padding=True, return_tensors="pt")
+    input_ids = encoded['input_ids'].to(device)
+    attention_mask = encoded['attention_mask'].to(device)
+
+    # Create the dataset
+    dataset = Dataset.from_dict({
+        'input_ids': input_ids,
+        'attention_mask': attention_mask,
+        'labels': torch.tensor(article_sents_binary).to(device)
+    })
+
+    return dataset
+
+
 def main():
     print("CUDA available:" + str(torch.cuda.is_available()))
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -39,42 +103,23 @@ def main():
     pseudo_summary = "rouge"
     dtype = "train"
     file_path = f'{root}{directory}{pseudo_summary}/{filename}_{dtype}.jsonl'
-    print(file_path)
-    pseudo_summary_dataset = load_jsonl_pandas(file_path, nrows=1)
+    pseudo_summary_dataset = load_jsonl_pandas(file_path, nrows=2)
 
     # load original dataset
     directory = "data/orig/"
     dtype = "train"
     file_path = f'{root}{directory}{dtype}/{filename}_{dtype}.jsonl'
-    print(file_path)
-    article_dataset = load_jsonl_pandas(file_path, nrows=1)
+    article_dataset = load_jsonl_pandas(file_path, nrows=2)
 
-    # 1. Preprocess the data
-    # confs = Arguments(nsent=1, fname=file_path, output='../data/output/rouge_cleaned.jsonl')
-    # article_dataset["rouge_cleaned"] = article_dataset.apply(lambda x: process_entry(x, confs), axis=1)
-    # assert that sentences from the pseudo-summary are in the original article
-    # for i, row in tqdm(article_dataset.iterrows(), desc="Binary sentence extraction"):
-    #     id_ = row['id']
-    #     rouge_cleaned = row['rouge_cleaned']
-    #     article = row['article']
-    #
-    #     # Prepare for sentence tokenization
-    #     rouge_cleaned = preprocess(rouge_cleaned)
-    #     article = preprocess(article)
-    #
-    #     # Tokenize sentences
-    #     rouge_cleaned_sents = sentence_tokenize(rouge_cleaned)
-    #     print(rouge_cleaned_sents)
-    #     article_sents = sentence_tokenize(article)
-    #
-    #     # Report sentence sizes
-    #     print(f'ID: {id_}', end=' | ')
-    #     print(f'Pseudo summary: {len(rouge_cleaned_sents)}', end=' | ')
-    #     print(f'Article: {len(article_sents)}', end=' | ')
-    #     print(f'Intersection: {len(set(rouge_cleaned_sents).intersection(set(article_sents)))}')
-
+    # Merge the pseudo-summary (based on ROUGE) and the original article
     df = pseudo_summary_dataset.merge(article_dataset[['article', 'id']], on='id', how='inner', suffixes=('', '_whole'))
 
+    # Store all article's sentences and their binary labels
+    # (1 if the sentence is in the pseudo summary, 0 otherwise)
+    article_sents = []
+    article_sents_binary = []
+    check_consistency = False  # Check if the pseudo summary is in the article (i.e., if preprocessing works correctly)
+    output_path = f'{root}data/tmp/{filename}_{dtype}_sentences.csv'
     for i, row in tqdm(df.iterrows(), desc="Binary sentence extraction"):
         id_ = row['id']
         pseudo_summary = row['article']
@@ -93,21 +138,28 @@ def main():
         print(f'Pseudo summary: {len(pseudo_summary_sents)}', end=' | ')
         print(f'Whole article: {len(article_whole_sents)}')
 
-        # Find the sentences that are in the pseudo summary
-        pseudo_summary_sents_binary = []
-        for sent in pseudo_summary_sents:
-            if sent in article_whole_sents:
-                pseudo_summary_sents_binary.append(1)
-            else:
-                pseudo_summary_sents_binary.append(0)
-                print("Sentence not found in article:", sent)
-        print("--------")
-        for s in pseudo_summary_sents:
-            print(s)
-        # Report the number of sentences that are in the pseudo summary
-        print(f'Pseudo summary sentences: {sum(pseudo_summary_sents_binary)}')
+        if check_consistency:
+            for sent in pseudo_summary_sents:
+                if sent in article_whole_sents:
+                    article_sents_binary.append(1)
+                else:
+                    article_sents_binary.append(0)
+                    print("Sentence not found in article:", sent)
+            print("--------")
 
-        break
+        # Find the sentences that are in the pseudo summary
+        for sent in article_whole_sents:
+            article_sents.append(sent)
+            if sent in pseudo_summary_sents:
+                article_sents_binary.append(1)
+            else:
+                article_sents_binary.append(0)
+
+        # Export the sentences and their labels to a csv file
+        df = pd.DataFrame({'sentence': article_sents, 'label': article_sents_binary})
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        df.to_csv(output_path, index=False)
+
 
 
 if __name__ == "__main__":
