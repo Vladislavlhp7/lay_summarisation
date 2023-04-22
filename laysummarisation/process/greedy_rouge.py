@@ -82,11 +82,15 @@ def process_entry(entry: pd.Series, conf: Arguments):
     rl = rouge_maximise(art_sent, entry.lay_summary)
     rl2 = rouge_lay_sent(art_sent, lay_sent)
 
+    # Sort the sentences by rouge score
     rl_sort = sorted(enumerate(rl), reverse=True, key=lambda x: x[1])
     rl2_sort = [sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2]
 
+    # Get the top n sentences
     rl_i = sorted([i for i, _ in rl_sort[: conf.nsent]])
     rl2_i = sorted([i for i, _ in rl2_sort[: conf.nsent]])
+
+    # Ensure that the sentences from both lists are unique
     merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
 
     return " ".join([art_sent[x] for x in sorted(merged_list)])
