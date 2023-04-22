@@ -13,4 +13,4 @@ python -m laysummarisation.process.greedy_rouge \
     --nsent 10 \
     --mode "split" \
     --workers 2 \
-    --nrows 2
+    --nrows 100000000

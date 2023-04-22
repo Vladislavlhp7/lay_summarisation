@@ -11,7 +11,7 @@ python -m laysummarisation.process.lexrank \
   --fname ${DATA_DIR}/train/${CORPUS}_train.jsonl \
   --output ${SAVE_DIR}/${CORPUS}_train.jsonl \
   --lex_sent 25 \
-  --nrows 2 \
+  --nrows 100000000 \
   --workers 2
 
 echo "------ Finished pre-processing train of ${CORPUS} ------"
