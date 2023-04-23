@@ -328,6 +328,24 @@ def lexrank_data(data, max_length=130):
     return summaries
 
 
+def get_binary_sentence_dataset(fname: str):
+    """
+        Load a binary sentence dataset from a CSV file.
+
+        Args:
+            fname (str): The filename of the dataset to load.
+
+        Returns:
+            Dataset: A Hugging Face Dataset object containing the loaded dataset.
+    """
+    df = pd.read_csv(fname)
+    dataset = Dataset.from_pandas(df)
+    dataset = dataset.map(lambda x: {'label': int(x['label'])})  # convert label to int
+    dataset = dataset.class_encode_column("label")  # convert label to one-hot
+    return dataset
+
+
+
 def remove_full_stop_after_et_al(text: str) -> str:
     return re.sub(r"(et al) \. (?![A-Z][a-z])", r"\1", text)
 

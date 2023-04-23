@@ -10,9 +10,9 @@ from laysummarisation.utils import load_jsonl_pandas
 from laysummarisation.utils import sentence_tokenize, preprocess
 
 
-def get_binary_label_dataset(df: pd.DataFrame, check_consistency=False):
+def get_binary_labels(df: pd.DataFrame, check_consistency=False):
     """
-    Get the dataset with the binary labels for each sentence in the article.
+    Get the article sentences and their binary labels (1 if the sentence is in the pseudo summary, 0 otherwise).
 
     :param df: The dataframe with the pseudo summary and the whole article
     :param check_consistency: Check if the pseudo summary is in the article (i.e., if preprocessing works correctly)
@@ -93,7 +93,7 @@ def main(conf: Arguments):
     df = pseudo_summary_dataset.merge(article_dataset[['article', 'id']], on='id', how='inner', suffixes=('', '_whole'))
 
     # Get the dataset with the binary labels for each sentence in the article
-    article_sents, article_sents_binary = get_binary_label_dataset(df, check_consistency=False)
+    article_sents, article_sents_binary = get_binary_labels(df, check_consistency=False)
 
     # Export the sentences and their labels to a csv file
     df = pd.DataFrame({'sentence': article_sents, 'label': article_sents_binary})
