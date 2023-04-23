@@ -2,10 +2,13 @@ import os
 from dataclasses import dataclass, field
 
 import torch
+import wandb
 from transformers import BertForSequenceClassification, BertTokenizerFast
 from transformers import HfArgumentParser
+from transformers import Trainer, TrainingArguments
+from wandb.sklearn.calculate import confusion_matrix
 
-from laysummarisation.utils import get_binary_sentence_dataset, set_seed
+from laysummarisation.utils import set_seed, load_binary_data, compute_binary_metrics
 
 
 @dataclass
@@ -16,6 +19,10 @@ class Arguments:
 
     fname: str = field(
         metadata={"help": "The input binary label dataset file path"},
+    )
+    lr: float = field(
+        default=2e-5,
+        metadata={"help": "The learning rate."},
     )
     seed: int = field(
         default=42,
@@ -37,18 +44,45 @@ def main(conf: Arguments):
     os.environ["WANDB_PROJECT"] = "laysummarisation"
     os.environ["WANDB_LOG_MODEL"] = "true"
 
-    model = BertForSequenceClassification.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+    model_name = "emilyalsentzer/Bio_ClinicalBERT"
+    model = BertForSequenceClassification.from_pretrained(model_name)
     model.to(device)
-    tokenizer = BertTokenizerFast.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+    tokenizer = BertTokenizerFast.from_pretrained(model_name)
 
-    # Get the dataset with the binary labels for each sentence in the article
-    dataset = get_binary_sentence_dataset(conf.fname)
+    train_dataset, val_dataset, test_dataset = load_binary_data(fname=conf.fname, tokenizer=tokenizer, max_length=128)
 
-    # Split the dataset into stratified train, validation and test (80%, 10%, 10%)
-    dataset_split = dataset.train_test_split(test_size=0.2, seed=42, shuffle=True, stratify_by_column='label')
-    train_dataset = dataset_split['train']
-    test_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['train']
-    val_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['test']
+    args = TrainingArguments(
+        output_dir='../tmp/',
+        evaluation_strategy='epoch',
+        save_strategy='epoch',
+        learning_rate=conf.lr,
+        per_device_train_batch_size=32,
+        per_device_eval_batch_size=32,
+        num_train_epochs=3,
+        weight_decay=0.01,
+        load_best_model_at_end=True,
+        metric_for_best_model='accuracy',
+        seed=conf.seed,
+    )
+
+    trainer = Trainer(
+        model=model,
+        args=args,
+        train_dataset=train_dataset,
+        eval_dataset=val_dataset,
+        compute_metrics=compute_binary_metrics,
+    )
+
+    trainer.train()
+
+    model.eval()
+    with torch.no_grad():
+        prediction_obj = trainer.predict(test_dataset)
+        metrics = prediction_obj.metrics
+        metrics = {f'test/{k}': v for k, v in metrics.items()}
+        print(metrics)
+        wandb.log(metrics)
+    trainer.save_model(model_name)
 
 
 if __name__ == "__main__":
