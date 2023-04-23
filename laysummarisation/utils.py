@@ -13,8 +13,8 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
 from nltk import sent_tokenize
+from tensorflow.python.ops.confusion_matrix import confusion_matrix
 from transformers import BertTokenizerFast
-from wandb.sklearn.calculate import confusion_matrix
 
 
 def preprocess(text):

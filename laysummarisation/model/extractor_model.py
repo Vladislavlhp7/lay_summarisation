@@ -6,8 +6,6 @@ import wandb
 from transformers import BertForSequenceClassification, BertTokenizerFast
 from transformers import HfArgumentParser
 from transformers import Trainer, TrainingArguments
-from wandb.sklearn.calculate import confusion_matrix
-
 from laysummarisation.utils import set_seed, load_binary_data, compute_binary_metrics
 
 
@@ -88,4 +86,6 @@ def main(conf: Arguments):
 if __name__ == "__main__":
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
+    if conf.fname is None:
+        conf.fname = '../../data/tmp/extractive/rouge/PLOS_train.csv'
     main(conf)
