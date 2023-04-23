@@ -1,100 +1,26 @@
-from pandarallel import pandarallel
-from transformers import AutoTokenizer, AutoModelForMaskedLM, HfArgumentParser
-from datasets import load_dataset, DatasetDict, Dataset
-from transformers import DataCollatorForSeq2Seq, Trainer, TrainingArguments
-from torch.utils.data import DataLoader
-from transformers import AutoModel, BertForSequenceClassification, BertTokenizerFast
-import torch
 import os
-import numpy as np
-import pandas as pd
-from laysummarisation.utils import load_jsonl_pandas
-from laysummarisation.utils import sentence_tokenize, preprocess
-import re
-from tqdm import tqdm
+from dataclasses import dataclass, field
 
-from process.greedy_rouge import process_entry, Arguments
-from utils import set_seed
+import torch
+from transformers import BertForSequenceClassification, BertTokenizerFast
+from transformers import HfArgumentParser
+
+from laysummarisation.utils import get_binary_sentence_dataset, set_seed
 
 
-def get_binary_label_dataset(
-        df: pd.DataFrame,
-        tokenizer: BertTokenizerFast,
-        output_path: str,
-        device: str,
-        check_consistency = False):
+@dataclass
+class Arguments:
     """
-    Get the dataset with the binary labels for each sentence in the article.
-
-    :param df: The dataframe with the pseudo summary and the whole article
-    :param tokenizer: The tokenizer to use
-    :param output_path: The path to save the csv file with the sentences and their labels
-    :param device: The device to use
-    :param check_consistency: Check if the pseudo summary is in the article (i.e., if preprocessing works correctly)
-    :return: The dataset with the binary labels
+    Arguments
     """
-    # Store all article's sentences and their binary labels
-    # (1 if the sentence is in the pseudo summary, 0 otherwise)
-    if not os.path.exists(output_path):
-        print('Output path does not exist. Extracting sentences and labels...')
-        article_sents = []
-        article_sents_binary = []
-        for i, row in tqdm(df.iterrows(), desc="Binary sentence extraction"):
-            id_ = row['id']
-            pseudo_summary = row['article']
-            article_whole = row['article_whole']
 
-            # Prepare for sentence tokenization
-            pseudo_summary = preprocess(pseudo_summary)
-            article_whole = preprocess(article_whole)
-
-            # Tokenize sentences
-            pseudo_summary_sents = sentence_tokenize(pseudo_summary)
-            article_whole_sents = sentence_tokenize(article_whole)
-
-            # Report sentence sizes
-            print(f'ID: {id_}', end=' | ')
-            print(f'Pseudo summary: {len(pseudo_summary_sents)}', end=' | ')
-            print(f'Whole article: {len(article_whole_sents)}')
-
-            if check_consistency:
-                for sent in pseudo_summary_sents:
-                    if sent in article_whole_sents:
-                        article_sents_binary.append(1)
-                    else:
-                        article_sents_binary.append(0)
-                        print("Sentence not found in article:", sent)
-                print("--------")
-
-            # Find the sentences that are in the pseudo summary
-            for sent in article_whole_sents:
-                article_sents.append(sent)
-                if sent in pseudo_summary_sents:
-                    article_sents_binary.append(1)
-                else:
-                    article_sents_binary.append(0)
-
-        # Export the sentences and their labels to a csv file
-        df = pd.DataFrame({'sentence': article_sents, 'label': article_sents_binary})
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        df.to_csv(output_path, index=False)
-    else:
-        print(f"Loading sentences from {output_path}")
-        df = pd.read_csv(output_path)
-        article_sents = df['sentence'].tolist()
-        article_sents_binary = df['label'].tolist()
-
-    # Tokenize the sentences
-    encoded = tokenizer(article_sents, truncation=True, padding=True, return_tensors="pt")
-
-    # Create the dataset
-    dataset = Dataset.from_dict({
-        'input_ids': encoded['input_ids'],
-        'attention_mask': encoded['attention_mask'],
-        'labels': torch.tensor(article_sents_binary).to(device)
-    })
-
-    return dataset
+    fname: str = field(
+        metadata={"help": "The input binary label dataset file path"},
+    )
+    seed: int = field(
+        default=42,
+        metadata={"help": "Random seed."},
+    )
 
 
 def main(conf: Arguments):
@@ -103,48 +29,29 @@ def main(conf: Arguments):
     if device == "cuda":
         torch.cuda.empty_cache()
 
-    pandarallel.initialize(conf.workers)
-
     # Load files
     print("Loading files...")
 
-    # set_seed(conf.seed)
+    set_seed(conf.seed)
 
     os.environ["WANDB_PROJECT"] = "laysummarisation"
     os.environ["WANDB_LOG_MODEL"] = "true"
 
     model = BertForSequenceClassification.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+    model.to(device)
     tokenizer = BertTokenizerFast.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
 
-    # load Pseudo-summarising dataset
-    root = "../../"
-    # root = ""  # root directory of the project
-    filename = "eLife"
-    directory = "data/input/"
-    # pseudo_summary = "lexrank"
-    pseudo_summary = "rouge"
-    dtype = "train"
-    file_path = f'{root}{directory}{pseudo_summary}/{filename}_{dtype}.jsonl'
-    pseudo_summary_dataset = load_jsonl_pandas(file_path, nrows=2)
-
-    # load original dataset
-    directory = "data/orig/"
-    dtype = "train"
-    file_path = f'{root}{directory}{dtype}/{filename}_{dtype}.jsonl'
-    article_dataset = load_jsonl_pandas(file_path, nrows=2)
-
-    # Merge the pseudo-summary (based on ROUGE) and the original article
-    df = pseudo_summary_dataset.merge(article_dataset[['article', 'id']], on='id', how='inner', suffixes=('', '_whole'))
-
     # Get the dataset with the binary labels for each sentence in the article
-    output_path = f'{root}data/tmp/{filename}_{dtype}_sentences.csv'
-    dataset = get_binary_label_dataset(df, tokenizer, output_path, device, check_consistency=False)
+    dataset = get_binary_sentence_dataset(conf.fname)
+
+    # Split the dataset into stratified train, validation and test (80%, 10%, 10%)
+    dataset_split = dataset.train_test_split(test_size=0.2, seed=42, shuffle=True, stratify_by_column='label')
+    train_dataset = dataset_split['train']
+    test_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['train']
+    val_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['test']
 
 
 if __name__ == "__main__":
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
-    if conf.nrows == 0:
-        conf.nrows = None
-
     main(conf)
