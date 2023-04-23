@@ -49,7 +49,11 @@ def rouge_maximise(corpus, sentence):
     scores = []
     rouge = Rouge()
     for c in corpus:
-        scores.append(dict(rouge.get_scores(c, sentence, avg=True))["rouge-l"]["f"])
+        try:
+            rouge_score = rouge.get_scores(c, sentence, avg=True)
+        except ValueError:
+            rouge_score = {"rouge-l": {"f": 0.0}, "rouge-1": {"f": 0.0}, "rouge-2": {"f": 0.0}}
+        scores.append(dict(rouge_score)["rouge-l"]["f"])
     return np.array(scores)
 
 
