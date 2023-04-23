@@ -1,7 +1,7 @@
 import os
 import re
 from random import seed
-from typing import Dict
+from typing import Dict, Tuple
 
 import evaluate
 import numpy as np
@@ -13,6 +13,8 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
 from nltk import sent_tokenize
+from transformers import BertTokenizerFast
+from wandb.sklearn.calculate import confusion_matrix
 
 
 def preprocess(text):
@@ -344,6 +346,61 @@ def get_binary_sentence_dataset(fname: str):
     dataset = dataset.class_encode_column("label")  # convert label to one-hot
     return dataset
 
+
+def load_binary_data(fname: str, tokenizer: BertTokenizerFast, max_length: int = 128) -> Tuple[Dataset, Dataset, Dataset]:
+    """
+        Load a binary sentence dataset from a CSV file.
+
+        Args:
+            fname (str): The filename of the dataset to load.
+            tokenizer (BertTokenizerFast): The tokenizer to use to tokenize the sentences.
+            max_length (int): The maximum length of the tokenized sentences.
+
+        Returns:
+            Tuple(Dataset, Dataset, Dataset): A tuple containing the train, validation and test datasets.
+    """
+    # Get the dataset with the binary labels for each sentence in the article
+    dataset = get_binary_sentence_dataset(fname)
+
+    # Split the dataset into stratified train, validation and test (80%, 10%, 10%)
+    dataset_split = dataset.train_test_split(test_size=0.2, seed=42, shuffle=True, stratify_by_column='label')
+    train_dataset = dataset_split['train']
+    test_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['train']
+    val_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['test']
+
+    # Tokenize the sentences
+    def tokenize(batch):
+        return tokenizer(batch["sentence"], padding=True, truncation=True, max_length=max_length)
+
+    train_dataset = train_dataset.map(tokenize, batched=True, batch_size=len(train_dataset))
+    val_dataset = val_dataset.map(tokenize, batched=True, batch_size=len(val_dataset))
+    test_dataset = test_dataset.map(tokenize, batched=True, batch_size=len(test_dataset))
+
+    # Set the format to pytorch
+    train_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
+    val_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
+    test_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
+
+    return train_dataset, val_dataset, test_dataset
+
+def compute_binary_metrics(pred):
+    labels = pred.label_ids
+    preds = pred.predictions.argmax(-1)
+    # get confusion matrix
+    tn, fp, fn, tp = confusion_matrix(labels, preds).ravel()
+    # compute accuracy
+    acc = (tp + tn) / (tp + tn + fp + fn)
+    # compute precision and recall
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    # compute f1 score
+    f1 = 2 * precision * recall / (precision + recall)
+    return {
+        'accuracy': acc,
+        'f1': f1,
+        'precision': precision,
+        'recall': recall,
+    }
 
 
 def remove_full_stop_after_et_al(text: str) -> str:
