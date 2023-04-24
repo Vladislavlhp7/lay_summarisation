@@ -101,7 +101,9 @@ def process_entry(entry: pd.Series, conf: Arguments):
 
 
 def main(conf: Arguments):
-    pandarallel.initialize(conf.workers, progress_bar=True)
+    if conf.workers is None:
+        conf.workers = 1
+    pandarallel.initialize(nb_workers=conf.workers, progress_bar=True)
 
     # Load files
     print("Loading files...")
@@ -109,14 +111,14 @@ def main(conf: Arguments):
 
     # Set the mode, either 'split' for split abstract and append it
     # or 'include' to include the abstract when summarising.
-    if conf.mode == "split":
-        data["article"] = data.parallel_apply(
-            lambda x: remove_abstract(x.article), axis=1
-        )
-    elif conf.mode == "include":
-        pass
-    else:
-        raise ValueError("Invalid mode")
+    # if conf.mode == "split":
+    #     data["article"] = data.parallel_apply(
+    #         lambda x: remove_abstract(x.article), axis=1
+    #     )
+    # elif conf.mode == "include":
+    #     pass
+    # else:
+    #     raise ValueError("Invalid mode")
 
     data["article"] = data.parallel_apply(lambda x: process_entry(x, conf), axis=1)
 

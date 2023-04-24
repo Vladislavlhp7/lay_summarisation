@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --login
 #$ -cwd
 
 #$ -pe smp.pe 8
@@ -11,4 +11,3 @@ module load tools/env/proxy2
 source activate nlu
 
 ./scripts/process_rouge.sh
-

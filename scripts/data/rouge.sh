@@ -12,7 +12,7 @@ python -m laysummarisation.process.greedy_rouge \
 	--output ${SEED_DIR}/${CORPUS}_train.jsonl \
 	--nsent 10 \
 	--mode "split" \
-	--workers 6 \
-	--nrows 10
+	--workers 8 \
+	--nrows 0
 
 # set nwors to 0 for the whole corpus
