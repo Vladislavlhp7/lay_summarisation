@@ -1,10 +1,11 @@
 import os
 from dataclasses import field, dataclass
-from typing import Optional
+from typing import Optional, List, Union
 
 import pandas as pd
 from tqdm import tqdm
 from transformers import HfArgumentParser
+import glob
 
 from laysummarisation.utils import load_jsonl_pandas
 from laysummarisation.utils import sentence_tokenize, preprocess
@@ -65,29 +66,56 @@ class Arguments:
     Arguments
     """
 
-    summary_fname: str = field(
-        metadata={"help": "The input jsonl file path for the pseudo summary."},
+    data_dir: str = field(
+        metadata={"help": "The input data directory."},
     )
-    article_fname: str = field(
-        metadata={"help": "The input jsonl file path for the original article."},
+    orig_dir: str = field(
+        metadata={"help": "The original data directory."},
     )
-    output: str = field(
-        metadata={"help": "The output mrp file path"},
+    output_dir: str = field(
+        metadata={"help": "The output data directory path"},
+    )
+    corpus: str = field(
+        metadata={"help": "The corpus to use."},
     )
     narticles: Optional[int] = field(
         default=None,
         metadata={"help": "The number of entries to process. (0 for all)"},
     )
+    all: Optional[bool] = field(
+        default=False,
+        metadata={"help": "Process all the articles."},
+    )
+    balance: Optional[bool] = field(
+        default=False,
+        metadata={"help": "Balance the dataset."},
+    )
+    seed: Optional[int] = field(
+        default=42,
+        metadata={"help": "The random seed."}
+    )
 
+def load_all(paths: List[str]):
+    # Load all datasets provided
+    df_from_each_file = (load_jsonl_pandas(f, nrows=conf.narticles) for f in paths)
+    return pd.concat(df_from_each_file, ignore_index=True)
+    
 
 def main(conf: Arguments):
     print("Loading files...")
 
     # Load Pseudo-summarising dataset
-    pseudo_summary_dataset = load_jsonl_pandas(conf.summary_fname, nrows=conf.narticles)
+    if conf.all:
+        assert conf.corpus == "all"
+        summary_files = glob.glob(os.path.join(conf.data_dir, "*.jsonl"))     
+        article_files = glob.glob(os.path.join(conf.orig_dir, "*.jsonl"))     
+        pseudo_summary_dataset = load_all(summary_files)
+        article_dataset = load_all(article_files)
+    else:
+        pseudo_summary_dataset = load_jsonl_pandas(os.path.join(conf.data_dir, f"{conf.corpus}_train.jsonl"), nrows=conf.narticles)
 
-    # Load original dataset
-    article_dataset = load_jsonl_pandas(conf.article_fname, nrows=conf.narticles)
+        # Load original dataset
+        article_dataset = load_jsonl_pandas(os.path.join(conf.orig_dir, f"{conf.corpus}_train.jsonl"), nrows=conf.narticles)
 
     # Merge the pseudo-summary (based on ROUGE) and the original article
     df = pseudo_summary_dataset.merge(article_dataset[['article', 'id']], on='id', how='inner', suffixes=('', '_whole'))
@@ -97,12 +125,17 @@ def main(conf: Arguments):
 
     # Export the sentences and their labels to a csv file
     df = pd.DataFrame({'sentence': article_sents, 'label': article_sents_binary})
-    os.makedirs(os.path.dirname(conf.output), exist_ok=True)
-    df.to_csv(conf.output, index=False)
-    return
 
+    if conf.balance:
+        df[df["label"] == 0].sample(n=df[df["label"] == 1], seed=conf.seed, replace=False)
+
+    os.makedirs(os.path.dirname(conf.output_dir), exist_ok=True)
+    df.to_csv(os.path.join(conf.output_dir,f"{conf.corpus}_train.csv"), index=False)
+    return
 
 if __name__ == "__main__":
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
+    if conf.narticles == 0:
+        conf.narticles = None
     main(conf)

@@ -2,10 +2,16 @@
 
 # Process the data using rouge maximisation.
 SEED_DIR=./data/tmp/extractive/${ALGO}
-mkdir -p ${SEED_DIR}
+INPUT_DIR=./data/input/${ALGO}
+ORIG_DIR=./data/orig/train
+mkdir -p "${SEED_DIR}"
 
 python -m laysummarisation.process.binary_sentences \
-    --summary_fname ./data/input/${ALGO}/${CORPUS}_train.jsonl \
-    --article_fname ./data/orig/train/${CORPUS}_train.jsonl \
-    --output ${SEED_DIR}/${CORPUS}_train.csv \
-    --narticles 10000000000
+	--data_dir "${INPUT_DIR}" \
+	--orig_dir "${ORIG_DIR}" \
+	--output "${SEED_DIR}" \
+	--corpus "${CORPUS}" \
+	--narticles 10 \
+	--seed 42 \
+	--all \
+	--balance

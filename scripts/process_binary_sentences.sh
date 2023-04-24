@@ -6,6 +6,6 @@ chmod +x scripts/data/*.sh
 # export ALGO=rouge
 # ./scripts/data/binary_sentences.sh
 #
-export CORPUS=PLOS
+export CORPUS="all"
 export ALGO=rouge
 ./scripts/data/binary_sentences.sh
