@@ -15,6 +15,6 @@ export OMP_NUM_THREADS=$NSLOTS
 
 #! pip install datasets
 
-export CORPUS=eLife
+export CORPUS=all
 ./scripts/train/clinicalbert.sh
 
