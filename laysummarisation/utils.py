@@ -8,12 +8,12 @@ import numpy as np
 import pandas as pd
 import torch
 from datasets import Dataset, DatasetDict
+from nltk import sent_tokenize
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
-from nltk import sent_tokenize
-from tensorflow.python.ops.confusion_matrix import confusion_matrix
+# from tensorflow.python.ops.confusion_matrix import confusion_matrix
 from transformers import BertTokenizerFast
 
 
@@ -29,9 +29,12 @@ def preprocess(text):
     """
     text = remove_full_stop_after_et_al(text)
     text = re.sub(r"\s+", " ", text)  # Replace multiple spaces with a single space
-    regex = re.compile(r'\.([A-Z][a-z])')
-    text = regex.sub(r'. \1', text)  # Add space after full stop. Important for sentence tokenization
+    regex = re.compile(r"\.([A-Z][a-z])")
+    text = regex.sub(
+        r". \1", text
+    )  # Add space after full stop. Important for sentence tokenization
     return text
+
 
 def sentence_tokenize(text):
     """
@@ -332,49 +335,63 @@ def lexrank_data(data, max_length=130):
 
 def get_binary_sentence_dataset(fname: str):
     """
-        Load a binary sentence dataset from a CSV file.
+    Load a binary sentence dataset from a CSV file.
 
-        Args:
-            fname (str): The filename of the dataset to load.
+    Args:
+        fname (str): The filename of the dataset to load.
 
-        Returns:
-            Dataset: A Hugging Face Dataset object containing the loaded dataset.
+    Returns:
+        Dataset: A Hugging Face Dataset object containing the loaded dataset.
     """
     df = pd.read_csv(fname)
     dataset = Dataset.from_pandas(df)
-    dataset = dataset.map(lambda x: {'label': int(x['label'])})  # convert label to int
+    dataset = dataset.map(lambda x: {"label": int(x["label"])})  # convert label to int
     dataset = dataset.class_encode_column("label")  # convert label to one-hot
     return dataset
 
 
-def load_binary_data(fname: str, tokenizer: BertTokenizerFast, max_length: int = 128) -> Tuple[Dataset, Dataset, Dataset]:
+def load_binary_data(
+    fname: str, tokenizer: BertTokenizerFast, max_length: int = 128
+) -> Tuple[Dataset, Dataset, Dataset]:
     """
-        Load a binary sentence dataset from a CSV file.
+    Load a binary sentence dataset from a CSV file.
 
-        Args:
-            fname (str): The filename of the dataset to load.
-            tokenizer (BertTokenizerFast): The tokenizer to use to tokenize the sentences.
-            max_length (int): The maximum length of the tokenized sentences.
+    Args:
+        fname (str): The filename of the dataset to load.
+        tokenizer (BertTokenizerFast): The tokenizer to use to tokenize the sentences.
+        max_length (int): The maximum length of the tokenized sentences.
 
-        Returns:
-            Tuple(Dataset, Dataset, Dataset): A tuple containing the train, validation and test datasets.
+    Returns:
+        Tuple(Dataset, Dataset, Dataset): A tuple containing the train, validation and test datasets.
     """
     # Get the dataset with the binary labels for each sentence in the article
     dataset = get_binary_sentence_dataset(fname)
 
     # Split the dataset into stratified train, validation and test (80%, 10%, 10%)
-    dataset_split = dataset.train_test_split(test_size=0.2, seed=42, shuffle=True, stratify_by_column='label')
-    train_dataset = dataset_split['train']
-    test_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['train']
-    val_dataset = dataset_split['test'].train_test_split(test_size=0.5, seed=42, stratify_by_column='label')['test']
+    dataset_split = dataset.train_test_split(
+        test_size=0.2, seed=42, shuffle=True, stratify_by_column="label"
+    )
+    train_dataset = dataset_split["train"]
+    test_dataset = dataset_split["test"].train_test_split(
+        test_size=0.5, seed=42, stratify_by_column="label"
+    )["train"]
+    val_dataset = dataset_split["test"].train_test_split(
+        test_size=0.5, seed=42, stratify_by_column="label"
+    )["test"]
 
     # Tokenize the sentences
     def tokenize(batch):
-        return tokenizer(batch["sentence"], padding=True, truncation=True, max_length=max_length)
+        return tokenizer(
+            batch["sentence"], padding=True, truncation=True, max_length=max_length
+        )
 
-    train_dataset = train_dataset.map(tokenize, batched=True, batch_size=len(train_dataset))
+    train_dataset = train_dataset.map(
+        tokenize, batched=True, batch_size=len(train_dataset)
+    )
     val_dataset = val_dataset.map(tokenize, batched=True, batch_size=len(val_dataset))
-    test_dataset = test_dataset.map(tokenize, batched=True, batch_size=len(test_dataset))
+    test_dataset = test_dataset.map(
+        tokenize, batched=True, batch_size=len(test_dataset)
+    )
 
     # Set the format to pytorch
     train_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
@@ -382,6 +399,7 @@ def load_binary_data(fname: str, tokenizer: BertTokenizerFast, max_length: int =
     test_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
 
     return train_dataset, val_dataset, test_dataset
+
 
 def compute_binary_metrics(pred):
     labels = pred.label_ids
@@ -396,10 +414,10 @@ def compute_binary_metrics(pred):
     # compute f1 score
     f1 = 2 * precision * recall / (precision + recall)
     return {
-        'accuracy': acc,
-        'f1': f1,
-        'precision': precision,
-        'recall': recall,
+        "accuracy": acc,
+        "f1": f1,
+        "precision": precision,
+        "recall": recall,
     }
 
 

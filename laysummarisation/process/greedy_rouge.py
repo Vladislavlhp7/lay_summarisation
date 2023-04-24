@@ -5,10 +5,11 @@ import nltk
 import numpy as np
 import pandas as pd
 from pandarallel import pandarallel
+from rouge import Rouge
+from rouge_score import rouge_scorer
 from transformers import HfArgumentParser
 
 from laysummarisation.utils import load_jsonl_pandas, preprocess, sentence_tokenize
-from rouge import Rouge
 
 
 @dataclass
@@ -47,13 +48,13 @@ def rouge_maximise(corpus, sentence):
     of scores.
     """
     scores = []
-    rouge = Rouge()
+    rouge = rouge_scorer.RougeScorer(["rougeL"])
     for c in corpus:
         try:
-            rouge_score = rouge.get_scores(c, sentence, avg=True)
+            rouge_score = rouge.score(c, sentence)["rougeL"].fmeasure
+            scores.append(rouge_score)
         except ValueError:
-            rouge_score = {"rouge-l": {"f": 0.0}, "rouge-1": {"f": 0.0}, "rouge-2": {"f": 0.0}}
-        scores.append(dict(rouge_score)["rouge-l"]["f"])
+            scores.append(0.0)
     return np.array(scores)
 
 
@@ -101,7 +102,7 @@ def process_entry(entry: pd.Series, conf: Arguments):
 
 
 def main(conf: Arguments):
-    pandarallel.initialize(conf.workers)
+    pandarallel.initialize(conf.workers, progress_bar=True)
 
     # Load files
     print("Loading files...")
