@@ -1,3 +1,5 @@
+import glob
+import os
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -8,7 +10,13 @@ from pandarallel import pandarallel
 from rouge_score import rouge_scorer
 from transformers import HfArgumentParser
 
-from laysummarisation.utils import load_jsonl_pandas, preprocess, sentence_tokenize
+from laysummarisation.utils import (
+    load_jsonl_pandas,
+    load_multiple_df,
+    preprocess,
+    sentence_tokenize,
+    set_seed,
+)
 
 
 @dataclass
@@ -17,24 +25,28 @@ class Arguments:
     Arguments
     """
 
-    fname: str = field(
-        metadata={"help": "The input jsonl file path."},
+    data_dir: str = field(
+        metadata={"help": "The input data directory."},
     )
-    output: str = field(
-        metadata={"help": "The output mrp file path"},
+    output_dir: str = field(
+        metadata={"help": "The output data directory path"},
     )
-    nsent: Optional[int] = field(
-        default=10,
-        metadata={"help": "The number of sentences to extract from the article."},
+    corpus: str = field(
+        metadata={"help": "The corpus to use."},
     )
     nrows: Optional[int] = field(
         default=None,
         metadata={"help": "The number of entries to process. (0 for all)"},
     )
-    mode: Optional[str] = field(
-        default="split",
-        metadata={"help": "The mode to run the script in."},
+    nsent: Optional[int] = field(
+        default=25,
+        metadata={"help": "The number of sentences to extract from the article."},
     )
+    all: Optional[bool] = field(
+        default=False,
+        metadata={"help": "Process all the articles."},
+    )
+    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
     workers: Optional[int] = field(
         default=1,
         metadata={"help": "The number of workers to use."},
@@ -107,7 +119,21 @@ def main(conf: Arguments):
 
     # Load files
     print("Loading files...")
-    data = load_jsonl_pandas(conf.fname, nrows=conf.nrows)
+
+    if conf.seed is not None:
+        set_seed(conf.seed)
+
+    # Load dataset
+    if conf.all:
+        assert conf.corpus == "all"
+        all_files = glob.glob(os.path.join(conf.data_dir, "*.jsonl"))
+        data = load_multiple_df(all_files)
+    else:
+        assert conf.corpus != "all"
+        data = load_jsonl_pandas(
+            os.path.join(conf.data_dir, f"{conf.corpus}_train.jsonl"),
+            nrows=conf.nrows,
+        )
 
     # Set the mode, either 'split' for split abstract and append it
     # or 'include' to include the abstract when summarising.
@@ -124,7 +150,11 @@ def main(conf: Arguments):
 
     # Save the data
     print("Saving data...")
-    data.to_json(conf.output, orient="records", lines=True)
+    data.to_json(
+        os.path.join(conf.output_dir, f"{conf.corpus}_train.jsonl"),
+        orient="records",
+        lines=True,
+    )
     return
 
 

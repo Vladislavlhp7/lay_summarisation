@@ -1,18 +1,20 @@
 #!/bin/bash
 # Script to pre-process all data.
 
-DATA_DIR=./data/orig/
 SAVE_DIR=./data/input/lexrank
+ORIG_DIR=./data/orig/train
 
 mkdir -p ${SAVE_DIR}
 
-# Pre-process train
 python -m laysummarisation.process.lexrank \
-  --fname ${DATA_DIR}/train/${CORPUS}_train.jsonl \
-  --output ${SAVE_DIR}/${CORPUS}_train.jsonl \
-  --lex_sent 25 \
-  --nrows 100000000 \
-  --workers 2
+	--data_dir "${ORIG_DIR}" \
+	--output_dir "${SAVE_DIR}" \
+	--corpus "${CORPUS}" \
+	--nrows 10 \
+	--nsent 25 \
+	--seed 42 \
+	--workers 6
+# --all \
 
 echo "------ Finished pre-processing train of ${CORPUS} ------"
 

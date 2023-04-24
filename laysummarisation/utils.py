@@ -1,7 +1,7 @@
 import os
 import re
 from random import seed
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import evaluate
 import numpy as np
@@ -15,6 +15,12 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
 from transformers import BertTokenizerFast
+
+
+def load_multiple_df(paths: List[str], nrows=None) -> pd.DataFrame:
+    # Load all datasets provided
+    df_from_each_file = (load_jsonl_pandas(f, nrows=nrows) for f in paths)
+    return pd.concat(df_from_each_file, ignore_index=True)
 
 
 def preprocess(text):

@@ -9,10 +9,44 @@ from transformers import HfArgumentParser
 
 from laysummarisation.utils import (
     load_jsonl_pandas,
+    load_multiple_df,
     preprocess,
     sentence_tokenize,
     set_seed,
 )
+
+
+@dataclass
+class Arguments:
+    """
+    Arguments
+    """
+
+    data_dir: str = field(
+        metadata={"help": "The input data directory."},
+    )
+    orig_dir: str = field(
+        metadata={"help": "The original data directory."},
+    )
+    output_dir: str = field(
+        metadata={"help": "The output data directory path"},
+    )
+    corpus: str = field(
+        metadata={"help": "The corpus to use."},
+    )
+    narticles: Optional[int] = field(
+        default=None,
+        metadata={"help": "The number of entries to process. (0 for all)"},
+    )
+    all: Optional[bool] = field(
+        default=False,
+        metadata={"help": "Process all the articles."},
+    )
+    balance: Optional[bool] = field(
+        default=False,
+        metadata={"help": "Balance the dataset."},
+    )
+    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
 
 
 def get_binary_labels(df: pd.DataFrame, check_consistency=False):
@@ -64,45 +98,6 @@ def get_binary_labels(df: pd.DataFrame, check_consistency=False):
     return article_sents, article_sents_binary
 
 
-@dataclass
-class Arguments:
-    """
-    Arguments
-    """
-
-    data_dir: str = field(
-        metadata={"help": "The input data directory."},
-    )
-    orig_dir: str = field(
-        metadata={"help": "The original data directory."},
-    )
-    output_dir: str = field(
-        metadata={"help": "The output data directory path"},
-    )
-    corpus: str = field(
-        metadata={"help": "The corpus to use."},
-    )
-    narticles: Optional[int] = field(
-        default=None,
-        metadata={"help": "The number of entries to process. (0 for all)"},
-    )
-    all: Optional[bool] = field(
-        default=False,
-        metadata={"help": "Process all the articles."},
-    )
-    balance: Optional[bool] = field(
-        default=False,
-        metadata={"help": "Balance the dataset."},
-    )
-    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
-
-
-def load_all(paths: List[str]):
-    # Load all datasets provided
-    df_from_each_file = (load_jsonl_pandas(f, nrows=conf.narticles) for f in paths)
-    return pd.concat(df_from_each_file, ignore_index=True)
-
-
 def main(conf: Arguments):
     print("Loading files...")
 
@@ -114,8 +109,8 @@ def main(conf: Arguments):
         assert conf.corpus == "all"
         summary_files = glob.glob(os.path.join(conf.data_dir, "*.jsonl"))
         article_files = glob.glob(os.path.join(conf.orig_dir, "*.jsonl"))
-        pseudo_summary_dataset = load_all(summary_files)
-        article_dataset = load_all(article_files)
+        pseudo_summary_dataset = load_multiple_df(summary_files)
+        article_dataset = load_multiple_df(article_files)
     else:
         assert conf.corpus != "all"
         pseudo_summary_dataset = load_jsonl_pandas(
