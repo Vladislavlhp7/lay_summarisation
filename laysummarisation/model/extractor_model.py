@@ -51,8 +51,8 @@ def main(conf: Arguments):
 
     args = TrainingArguments(
         output_dir='../tmp/',
-        evaluation_strategy='epoch',
-        save_strategy='epoch',
+        evaluation_strategy='steps',
+        save_strategy='steps',
         learning_rate=conf.lr,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
@@ -61,6 +61,8 @@ def main(conf: Arguments):
         load_best_model_at_end=True,
         metric_for_best_model='accuracy',
         seed=conf.seed,
+        logging_steps=100,
+        save_steps=100,
     )
 
     trainer = Trainer(
