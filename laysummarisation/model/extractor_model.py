@@ -3,9 +3,8 @@ from dataclasses import dataclass, field
 
 import torch
 import wandb
-from datasets import Dataset
 from transformers import (BertForSequenceClassification, BertTokenizerFast,
-                          HfArgumentParser, Trainer, TrainingArguments)
+                          HfArgumentParser, Trainer, TrainingArguments, BertConfig)
 
 from laysummarisation.utils import (compute_binary_metrics, load_binary_data,
                                     set_seed)
@@ -30,6 +29,35 @@ class Arguments:
     )
 
 
+def generate_summary(model_path: str, max_tokens: int = 512, device: str = "cpu"):
+    """
+    Generate summary from the BERT model
+
+    Args:
+        model_path (str): The path to the model.
+        max_tokens (int): The maximum number of tokens to generate.
+        device (str): The device to use.
+
+    Returns:
+        summary (str): The generated summary.
+    """
+    # Load model
+    model_dir = os.path.dirname(model_path)
+    output_model_file = f"{model_dir}/pytorch_model.bin"
+    output_config_file = f"{model_dir}/config.json"
+    config = BertConfig.from_json_file(output_config_file)
+    model = BertForSequenceClassification(config)
+    model.to(device)
+    tokenizer = BertTokenizerFast.from_pretrained(model_path)
+    model.load_state_dict(torch.load(output_model_file, map_location=device))
+
+    # Generate summarising sentence probabilities
+    model.eval()
+    with torch.no_grad():
+        pass
+        # outputs = trainer.predict(inputs_embedded)
+        # predictions = softmax(outputs.predictions, axis=1)
+
 def main(conf: Arguments):
     print("CUDA available:" + str(torch.cuda.is_available()))
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -45,7 +73,7 @@ def main(conf: Arguments):
     os.environ["WANDB_LOG_MODEL"] = "true"
 
     model_name = "emilyalsentzer/Bio_ClinicalBERT"
-    model = BertForSequenceClassification.from_pretrained(model_name)
+    model = BertForSequenceClassification.from_pretrained(model_name, num_labels=2)
     assert isinstance(model, BertForSequenceClassification)
     model.to(device)
     tokenizer = BertTokenizerFast.from_pretrained(model_name)
