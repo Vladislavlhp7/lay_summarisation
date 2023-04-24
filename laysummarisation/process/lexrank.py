@@ -77,7 +77,11 @@ def main(conf: Arguments):
 
     # Save the data
     print("Saving data...")
-    data.to_json(conf.output_dir, orient="records", lines=True)
+    data.to_json(
+        os.path.join(conf.output_dir, f"{conf.corpus}_train.jsonl"),
+        orient="records",
+        lines=True,
+    )
     return
 
 

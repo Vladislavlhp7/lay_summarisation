@@ -3,12 +3,15 @@ from dataclasses import dataclass, field
 
 import torch
 import wandb
-from datasets import Dataset
-from transformers import (BertForSequenceClassification, BertTokenizerFast,
-                          HfArgumentParser, Trainer, TrainingArguments)
+from transformers import (
+    BertForSequenceClassification,
+    BertTokenizerFast,
+    HfArgumentParser,
+    Trainer,
+    TrainingArguments,
+)
 
-from laysummarisation.utils import (compute_binary_metrics, load_binary_data,
-                                    set_seed)
+from laysummarisation.utils import compute_binary_metrics, load_binary_data, set_seed
 
 
 @dataclass

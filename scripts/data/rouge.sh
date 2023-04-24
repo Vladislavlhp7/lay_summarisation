@@ -1,21 +1,20 @@
 #!/bin/bash
 
 # Process the data using rouge maximisation.
-SEED_DIR=./data/input/rouge
-MODEL=./weights/Clinical-Longformer
-SEED=42
+SAVE_DIR=./data/input/lexrank
+ORIG_DIR=./data/orig/train
 
-mkdir -p ${SEED_DIR}
+mkdir -p ${SAVE_DIR}
 
-python -m laysummarisation.process.binary_sentences \
-	--data_dir "${INPUT_DIR}" \
-	--orig_dir "${ORIG_DIR}" \
-	--output "${SEED_DIR}" \
+python -m laysummarisation.process.greedy_rouge \
+	--data_dir "${ORIG_DIR}" \
+	--output_dir "${SAVE_DIR}" \
 	--corpus "${CORPUS}" \
-	--narticles 0 \
+	--nrows 0 \
+	--nsent 25 \
 	--seed 42 \
-	--all \
-	--balance
+	--workers 6
+# --all \
 
 # python -m laysummarisation.process.greedy_rouge \
 # 	--fname ./data/orig/train/${CORPUS}_train.jsonl \

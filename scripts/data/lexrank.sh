@@ -6,16 +6,15 @@ ORIG_DIR=./data/orig/train
 
 mkdir -p ${SAVE_DIR}
 
-python -m laysummarisation.process.binary_sentences \
+python -m laysummarisation.process.lexrank \
 	--data_dir "${ORIG_DIR}" \
 	--output_dir "${SAVE_DIR}" \
 	--corpus "${CORPUS}" \
-	--nrows 0 \
+	--nrows 10 \
 	--nsent 25 \
 	--seed 42 \
-	--all \
-	--workers 6 \
-	--balance
+	--workers 6
+# --all \
 
 echo "------ Finished pre-processing train of ${CORPUS} ------"
 
