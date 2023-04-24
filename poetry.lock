@@ -2654,6 +2654,21 @@ files = [
 tests = ["pytest"]
 
 [[package]]
+name = "py-readability-metrics"
+version = "1.4.5"
+description = "Score text \"Readability\" with popular formulas and metrics including Flesch-Kincaid, Gunning Fog, ARI, Dale Chall, SMOG, Spache and more"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "py-readability-metrics-1.4.5.tar.gz", hash = "sha256:465b7ffa1063f2448bf791dac50f9117d8c2bf06d931bbb0955606e14c4b3ddc"},
+    {file = "py_readability_metrics-1.4.5-py3-none-any.whl", hash = "sha256:3ae5eaaa9b5d0de93b0ad6ab6a3bb26c518da1ce8bc6f2ff8aa3bf0e33f05777"},
+]
+
+[package.dependencies]
+nltk = "*"
+
+[[package]]
 name = "pyarrow"
 version = "11.0.0"
 description = "Python library for Apache Arrow"
@@ -4134,4 +4149,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "fbca0a7dd86ece26e98969d6ab5fdb26b4507bca131cb49307bafe933a33d2d9"
+content-hash = "135551b14c0184b5b2ea76c8f9f531cdfc4250358c6e80987d3d854ee325dd84"

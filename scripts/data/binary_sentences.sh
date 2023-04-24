@@ -11,7 +11,7 @@ python -m laysummarisation.process.binary_sentences \
 	--orig_dir "${ORIG_DIR}" \
 	--output "${SEED_DIR}" \
 	--corpus "${CORPUS}" \
-	--narticles 10 \
+	--narticles 0 \
 	--seed 42 \
 	--all \
 	--balance

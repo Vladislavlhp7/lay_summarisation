@@ -1,14 +1,18 @@
+import glob
 import os
-from dataclasses import field, dataclass
-from typing import Optional, List, Union
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 import pandas as pd
 from tqdm import tqdm
 from transformers import HfArgumentParser
-import glob
 
-from laysummarisation.utils import load_jsonl_pandas
-from laysummarisation.utils import sentence_tokenize, preprocess
+from laysummarisation.utils import (
+    load_jsonl_pandas,
+    preprocess,
+    sentence_tokenize,
+    set_seed,
+)
 
 
 def get_binary_labels(df: pd.DataFrame, check_consistency=False):
@@ -23,10 +27,10 @@ def get_binary_labels(df: pd.DataFrame, check_consistency=False):
     # (1 if the sentence is in the pseudo summary, 0 otherwise)
     article_sents = []
     article_sents_binary = []
-    for i, row in tqdm(df.iterrows(), desc="Binary sentence extraction"):
-        id_ = row['id']
-        pseudo_summary = row['article']
-        article_whole = row['article_whole']
+    for _, row in tqdm(df.iterrows(), desc="Binary sentence extraction"):
+        id_ = row["id"]
+        pseudo_summary = row["article"]
+        article_whole = row["article_whole"]
 
         # Prepare for sentence tokenization
         pseudo_summary = preprocess(pseudo_summary)
@@ -37,9 +41,9 @@ def get_binary_labels(df: pd.DataFrame, check_consistency=False):
         article_whole_sents = sentence_tokenize(article_whole)
 
         # Report sentence sizes
-        print(f'ID: {id_}', end=' | ')
-        print(f'Pseudo summary: {len(pseudo_summary_sents)}', end=' | ')
-        print(f'Whole article: {len(article_whole_sents)}')
+        print(f"ID: {id_}", end=" | ")
+        print(f"Pseudo summary: {len(pseudo_summary_sents)}", end=" | ")
+        print(f"Whole article: {len(article_whole_sents)}")
 
         if check_consistency:
             for sent in pseudo_summary_sents:
@@ -90,48 +94,74 @@ class Arguments:
         default=False,
         metadata={"help": "Balance the dataset."},
     )
-    seed: Optional[int] = field(
-        default=42,
-        metadata={"help": "The random seed."}
-    )
+    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
+
 
 def load_all(paths: List[str]):
     # Load all datasets provided
     df_from_each_file = (load_jsonl_pandas(f, nrows=conf.narticles) for f in paths)
     return pd.concat(df_from_each_file, ignore_index=True)
-    
+
 
 def main(conf: Arguments):
     print("Loading files...")
 
+    if conf.seed is not None:
+        set_seed(conf.seed)
+
     # Load Pseudo-summarising dataset
     if conf.all:
         assert conf.corpus == "all"
-        summary_files = glob.glob(os.path.join(conf.data_dir, "*.jsonl"))     
-        article_files = glob.glob(os.path.join(conf.orig_dir, "*.jsonl"))     
+        summary_files = glob.glob(os.path.join(conf.data_dir, "*.jsonl"))
+        article_files = glob.glob(os.path.join(conf.orig_dir, "*.jsonl"))
         pseudo_summary_dataset = load_all(summary_files)
         article_dataset = load_all(article_files)
     else:
-        pseudo_summary_dataset = load_jsonl_pandas(os.path.join(conf.data_dir, f"{conf.corpus}_train.jsonl"), nrows=conf.narticles)
+        assert conf.corpus != "all"
+        pseudo_summary_dataset = load_jsonl_pandas(
+            os.path.join(conf.data_dir, f"{conf.corpus}_train.jsonl"),
+            nrows=conf.narticles,
+        )
 
         # Load original dataset
-        article_dataset = load_jsonl_pandas(os.path.join(conf.orig_dir, f"{conf.corpus}_train.jsonl"), nrows=conf.narticles)
+        article_dataset = load_jsonl_pandas(
+            os.path.join(conf.orig_dir, f"{conf.corpus}_train.jsonl"),
+            nrows=conf.narticles,
+        )
 
     # Merge the pseudo-summary (based on ROUGE) and the original article
-    df = pseudo_summary_dataset.merge(article_dataset[['article', 'id']], on='id', how='inner', suffixes=('', '_whole'))
+    df = pseudo_summary_dataset.merge(
+        article_dataset[["article", "id"]],
+        on="id",
+        how="inner",
+        suffixes=("", "_whole"),
+    )
 
     # Get the dataset with the binary labels for each sentence in the article
     article_sents, article_sents_binary = get_binary_labels(df, check_consistency=False)
 
     # Export the sentences and their labels to a csv file
-    df = pd.DataFrame({'sentence': article_sents, 'label': article_sents_binary})
+    df = pd.DataFrame({"sentence": article_sents, "label": article_sents_binary})
+
+    print(df.dtypes)
+    print(df.head())
+    print(df.columns)
+    print(df[df["label"] == 1].shape[0])
 
     if conf.balance:
-        df[df["label"] == 0].sample(n=df[df["label"] == 1], seed=conf.seed, replace=False)
+        df = pd.concat(
+            [
+                df[df["label"] == 0].sample(
+                    n=df[df["label"] == 1].shape[0], replace=False
+                ),
+                df[df["label"] == 1],
+            ]
+        )
 
     os.makedirs(os.path.dirname(conf.output_dir), exist_ok=True)
-    df.to_csv(os.path.join(conf.output_dir,f"{conf.corpus}_train.csv"), index=False)
+    df.to_csv(os.path.join(conf.output_dir, f"{conf.corpus}_train.csv"), index=False)
     return
+
 
 if __name__ == "__main__":
     parser = HfArgumentParser(Arguments)
