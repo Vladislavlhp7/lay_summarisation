@@ -5,7 +5,6 @@ import nltk
 import numpy as np
 import pandas as pd
 from pandarallel import pandarallel
-from rouge import Rouge
 from rouge_score import rouge_scorer
 from transformers import HfArgumentParser
 

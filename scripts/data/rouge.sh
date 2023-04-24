@@ -13,6 +13,6 @@ python -m laysummarisation.process.greedy_rouge \
 	--nsent 10 \
 	--mode "split" \
 	--workers 6 \
-	--nrows 0
+	--nrows 10
 
 # set nwors to 0 for the whole corpus

@@ -13,7 +13,6 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
-# from tensorflow.python.ops.confusion_matrix import confusion_matrix
 from transformers import BertTokenizerFast
 
 
@@ -405,14 +404,27 @@ def compute_binary_metrics(pred):
     labels = pred.label_ids
     preds = pred.predictions.argmax(-1)
     # get confusion matrix
-    tn, fp, fn, tp = confusion_matrix(labels, preds).ravel()
-    # compute accuracy
+
+    from pycm import ConfusionMatrix
+
+    cm = ConfusionMatrix(actual_vector=labels, predict_vector=preds)
+
+    tn, fp, fn, tp = cm.TN[0], cm.FP[0], cm.FN[0], cm.TP[0]
     acc = (tp + tn) / (tp + tn + fp + fn)
-    # compute precision and recall
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
-    # compute f1 score
     f1 = 2 * precision * recall / (precision + recall)
+
+    # # cm = ConfusionMatrix(actual_vector=y_actu, predict_vector=y_pred)
+    # tn, fp, fn, tp = confusion_matrix(labels, preds).ravel()
+    # # compute accuracy
+    # acc = (tp + tn) / (tp + tn + fp + fn)
+    # # compute precision and recall
+    # precision = tp / (tp + fp)
+    # recall = tp / (tp + fn)
+    # # compute f1 score
+    # f1 = 2 * precision * recall / (precision + recall)
+
     return {
         "accuracy": acc,
         "f1": f1,
