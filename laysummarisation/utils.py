@@ -23,6 +23,30 @@ def load_multiple_df(paths: List[str], nrows=None) -> pd.DataFrame:
     return pd.concat(df_from_each_file, ignore_index=True)
 
 
+def remove_citations(text: str) -> str:
+    """
+    Remove citations from a string of text.
+
+    Args:
+        text (str): The text to remove citations from.
+
+    Returns:
+        str: The text with citations removed.
+    """
+    # Remove citations
+    author = "(?:[A-Z][A-Za-z'`-]+)"
+    etal = "(?:et al.?)"
+    additional = "(?:,? (?:(?:and |& )?" + author + "|" + etal + "))"
+    year_num = "(?:19|20)[0-9][0-9]"
+    page_num = "(?:, p.? [0-9]+)?"  # Always optional
+    year = "(?:, *" + year_num + page_num + "| *\(" + year_num + page_num + "\))"
+    regex = "(" + author + additional + "*" + year + ")"
+    text = re.sub(regex, "", text)
+    # remove inline bracketed citations, e.g., [1], [2,3], [4-6], [7, 8, 9]
+    text = re.sub(r"\[[0-9]+(?:-[0-9]+)?]", "", text)
+    text = re.sub(r"\[\d+(?:,\s*\d+)+]", "", text)
+    return text
+
 def preprocess(text):
     """
     Preprocess a string of text.
@@ -41,6 +65,7 @@ def preprocess(text):
     text = regex.sub(
         r". \1", text
     )  # Add space after full stop. Important for sentence tokenization
+    text = remove_citations(text)  # Remove citations
     return text
 
 
