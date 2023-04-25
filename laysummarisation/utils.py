@@ -308,9 +308,7 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
     # Compute Rouge2 scores for the predictions and labels
     rouge_output = rouge.compute(
         predictions=pred_str, references=label_str, rouge_types=["rouge2"]
-    )
-    assert rouge_output is not None
-    rouge_output = rouge_output["rouge2"].mid
+    )["rouge2"].mid
 
     # Round the Rouge2 scores to 4 decimal places and return them in a dictionary
     return {
