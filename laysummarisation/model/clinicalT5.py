@@ -62,13 +62,13 @@ def main():
 
     train_dataset = TextDataset(
         tokenizer=tokenizer,
-        file_path="../laySummarisation/data/input/rouge/eLife_train.jsonl",
+        file_path="./data/input/rouge/eLife_train.jsonl",
         column_names=["article", "lay_summary"],
         block_size=512,
     )
     eval_dataset = TextDataset(
         tokenizer=tokenizer,
-        file_path="../laySummarisation/data/input/rouge/eLife_val.jsonl",
+        file_path="./data/input/rouge/eLife_val.jsonl",
         column_names=["article", "lay_summary"],
         block_size=512,
     )

@@ -76,8 +76,8 @@ def main():
         learning_rate=5e-5,
     )
 
-    train_df = pd.read_json("../../data/input/rouge/eLife_train.jsonl", lines=True)
-    eval_df = pd.read_json("../../data/input/rouge/eLife_val.jsonl", lines=True)
+    train_df = pd.read_json("./data/input/rouge/eLife_train.jsonl", lines=True)
+    eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True)
 
     # Create the train and evaluation datasets
     train_dataset = [build_inputs(row['article'], row['lay_summary'], tokenizer) for _, row in train_df.iterrows()]
