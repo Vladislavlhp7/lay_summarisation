@@ -1,7 +1,7 @@
 import glob
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import nltk
 import numpy as np
@@ -29,22 +29,26 @@ class Arguments:
     corpus: str = field(
         metadata={"help": "The corpus to use."},
     )
+    nsent: int = field(
+        default=10,
+        metadata={
+            "help": "The number of sentences to extract from the article."
+        },
+    )
+    seed: Optional[int] = field(
+        default=None, metadata={"help": "The random seed."}
+    )
+    workers: Union[int, None] = field(
+        default=None,
+        metadata={"help": "The number of workers to use."},
+    )
     nrows: Optional[int] = field(
         default=None,
         metadata={"help": "The number of entries to process. (0 for all)"},
     )
-    nsent: Optional[int] = field(
-        default=25,
-        metadata={"help": "The number of sentences to extract from the article."},
-    )
     all: Optional[bool] = field(
         default=False,
         metadata={"help": "Process all the articles."},
-    )
-    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
-    workers: Optional[int] = field(
-        default=1,
-        metadata={"help": "The number of workers to use."},
     )
 
 
@@ -81,7 +85,7 @@ def remove_abstract(article: str):
     return "\n".join(article.split("\n")[1:])
 
 
-def process_entry(entry: pd.Series, conf: Arguments):
+def process_entry(entry: pd.Series, nsent: int):
     """
     Process a single entry from the dataset.
     """
@@ -95,11 +99,13 @@ def process_entry(entry: pd.Series, conf: Arguments):
 
     # Sort the sentences by rouge score
     rl_sort = sorted(enumerate(rl), reverse=True, key=lambda x: x[1])
-    rl2_sort = [sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2]
+    rl2_sort = [
+        sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2
+    ]
 
     # Get the top n sentences
-    rl_i = sorted([i for i, _ in rl_sort[: conf.nsent]])
-    rl2_i = sorted([i for i, _ in rl2_sort[: conf.nsent]])
+    rl_i = sorted([i for i, _ in rl_sort[:nsent]])
+    rl2_i = sorted([i for i, _ in rl2_sort[:nsent]])
 
     # Ensure that the sentences from both lists are unique
     merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
@@ -108,15 +114,13 @@ def process_entry(entry: pd.Series, conf: Arguments):
 
 
 def main(conf: Arguments):
-    if conf.workers is None:
-        conf.workers = 1
-    pandarallel.initialize(nb_workers=conf.workers, progress_bar=True)
+    if conf.workers is not None:
+        pandarallel.initialize(nb_workers=conf.workers, progress_bar=True)
+    if conf.seed is not None:
+        set_seed(conf.seed)
 
     # Load files
     print("Loading files...")
-
-    if conf.seed is not None:
-        set_seed(conf.seed)
 
     # Load dataset
     if conf.all:
@@ -141,7 +145,14 @@ def main(conf: Arguments):
     # else:
     #     raise ValueError("Invalid mode")
 
-    data["article"] = data.parallel_apply(lambda x: process_entry(x, conf), axis=1)
+    if conf.workers is None:
+        data["article"] = data.apply(
+            lambda x: process_entry(x, conf.nsent), axis=1
+        )
+    else:
+        data["article"] = data.parallel_apply(
+            lambda x: process_entry(x, conf.nsent), axis=1
+        )
 
     # Save the data
     print("Saving data...")
@@ -157,9 +168,5 @@ if __name__ == "__main__":
     nltk.download("punkt")
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
-
-    # INFO: ZERO LOADS ALL LINES
-    if conf.nrows == 0:
-        conf.nrows = None
 
     main(conf)

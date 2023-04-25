@@ -1,4 +1,3 @@
-import glob
 import os
 
 import torch
@@ -8,13 +7,13 @@ from transformers import (HfArgumentParser, LEDConfig,
                           Seq2SeqTrainer, Seq2SeqTrainingArguments)
 
 from laysummarisation.config import LFParserConfig
-from laysummarisation.utils import (compute_metrics,
-                                    create_article_dataset_dict,
-                                    load_jsonl_pandas, set_seed)
+from laysummarisation.utils import compute_metrics, load_jsonl_pandas, set_seed
 
 
 class eLifeDataset(Dataset):
-    def __init__(self, df, tokenizer, max_input_length=1024, max_output_length=64):
+    def __init__(
+        self, df, tokenizer, max_input_length=1024, max_output_length=64
+    ):
         self.df = df
         self.tokenizer = tokenizer
         self.max_input_length = max_input_length
@@ -69,7 +68,9 @@ def train(conf: LFParserConfig):
 
     # Set Generation hyperparameters
 
-    lf_config.attention_window = [conf.attention_window] * lf_config.num_hidden_layers
+    lf_config.attention_window = [
+        conf.attention_window
+    ] * lf_config.num_hidden_layers
     lf_config.num_beams = conf.nbeams
     lf_config.max_length = conf.max_encode
     lf_config.min_length = conf.min_encode

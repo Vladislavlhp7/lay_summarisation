@@ -13,5 +13,5 @@ python -m laysummarisation.process.greedy_rouge \
 	--nrows 0 \
 	--nsent 10 \
 	--seed 42 \
-	--workers 6
+	--workers 8
 # --all \
