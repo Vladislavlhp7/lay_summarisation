@@ -3,6 +3,7 @@
 tmp
 weights/*
 data/*
+uber.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

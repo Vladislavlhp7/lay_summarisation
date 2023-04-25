@@ -35,13 +35,17 @@ class Arguments:
     )
     nsent: Optional[int] = field(
         default=25,
-        metadata={"help": "The number of sentences to extract from the article."},
+        metadata={
+            "help": "The number of sentences to extract from the article."
+        },
     )
     all: Optional[bool] = field(
         default=False,
         metadata={"help": "Process all the articles."},
     )
-    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
+    seed: Optional[int] = field(
+        default=42, metadata={"help": "The random seed."}
+    )
     workers: Optional[int] = field(
         default=1,
         metadata={"help": "The number of workers to use."},
@@ -81,7 +85,7 @@ def remove_abstract(article: str):
     return "\n".join(article.split("\n")[1:])
 
 
-def process_entry(entry: pd.Series, conf: Arguments):
+def process_entry(entry: pd.Series, nsent: int):
     """
     Process a single entry from the dataset.
     """
@@ -95,11 +99,13 @@ def process_entry(entry: pd.Series, conf: Arguments):
 
     # Sort the sentences by rouge score
     rl_sort = sorted(enumerate(rl), reverse=True, key=lambda x: x[1])
-    rl2_sort = [sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2]
+    rl2_sort = [
+        sorted(enumerate(r), reverse=True, key=lambda x: x[1])[0] for r in rl2
+    ]
 
     # Get the top n sentences
-    rl_i = sorted([i for i, _ in rl_sort[: conf.nsent]])
-    rl2_i = sorted([i for i, _ in rl2_sort[: conf.nsent]])
+    rl_i = sorted([i for i, _ in rl_sort[:nsent]])
+    rl2_i = sorted([i for i, _ in rl2_sort[:nsent]])
 
     # Ensure that the sentences from both lists are unique
     merged_list = set(rl_i + [x for x in rl2_i if x not in rl_i])
@@ -141,7 +147,9 @@ def main(conf: Arguments):
     # else:
     #     raise ValueError("Invalid mode")
 
-    data["article"] = data.parallel_apply(lambda x: process_entry(x, conf), axis=1)
+    data["article"] = data.parallel_apply(
+        lambda x: process_entry(x, nsent), axis=1
+    )
 
     # Save the data
     print("Saving data...")
