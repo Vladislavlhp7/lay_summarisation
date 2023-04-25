@@ -1,13 +1,13 @@
 # pyright: reportUnusedImport=false, reportUnusedExpression=false
 
 """
-# My first app
-Here's our first attempt at using data to create a table:
+# BioLaySum Demo App
+
+Find out how to run the demo on CSF.
+Hint: Check how you connect a port to CSF such as for Jupyter.
+Now check if you can do the same for Streamlit.
 """
 
-import pandas as pd
-
-import laysummarisation
 import streamlit as st
 from laysummarisation.process.greedy_rouge import process_entry
 from laysummarisation.utils import load_jsonl_pandas, set_seed

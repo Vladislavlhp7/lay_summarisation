@@ -1,19 +1,14 @@
 import glob
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Optional
 
 import pandas as pd
 from tqdm import tqdm
 from transformers import HfArgumentParser
 
-from laysummarisation.utils import (
-    load_jsonl_pandas,
-    load_multiple_df,
-    preprocess,
-    sentence_tokenize,
-    set_seed,
-)
+from laysummarisation.utils import (load_jsonl_pandas, load_multiple_df,
+                                    preprocess, sentence_tokenize, set_seed)
 
 
 @dataclass
@@ -46,7 +41,9 @@ class Arguments:
         default=False,
         metadata={"help": "Balance the dataset."},
     )
-    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
+    seed: Optional[int] = field(
+        default=None, metadata={"help": "The random seed."}
+    )
 
 
 def get_binary_labels(df: pd.DataFrame, check_consistency=False):
@@ -99,10 +96,12 @@ def get_binary_labels(df: pd.DataFrame, check_consistency=False):
 
 
 def main(conf: Arguments):
-    print("Loading files...")
-
     if conf.seed is not None:
         set_seed(conf.seed)
+    if conf.narticles == 0:
+        conf.narticles = None
+
+    print("Loading files...")
 
     # Load Pseudo-summarising dataset
     if conf.all:
@@ -133,15 +132,14 @@ def main(conf: Arguments):
     )
 
     # Get the dataset with the binary labels for each sentence in the article
-    article_sents, article_sents_binary = get_binary_labels(df, check_consistency=False)
+    article_sents, article_sents_binary = get_binary_labels(
+        df, check_consistency=False
+    )
 
     # Export the sentences and their labels to a csv file
-    df = pd.DataFrame({"sentence": article_sents, "label": article_sents_binary})
-
-    print(df.dtypes)
-    print(df.head())
-    print(df.columns)
-    print(df[df["label"] == 1].shape[0])
+    df = pd.DataFrame(
+        {"sentence": article_sents, "label": article_sents_binary}
+    )
 
     if conf.balance:
         df = pd.concat(
@@ -154,13 +152,13 @@ def main(conf: Arguments):
         )
 
     os.makedirs(os.path.dirname(conf.output_dir), exist_ok=True)
-    df.to_csv(os.path.join(conf.output_dir, f"{conf.corpus}_train.csv"), index=False)
+    df.to_csv(
+        os.path.join(conf.output_dir, f"{conf.corpus}_train.csv"), index=False
+    )
     return
 
 
 if __name__ == "__main__":
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
-    if conf.narticles == 0:
-        conf.narticles = None
     main(conf)

@@ -6,12 +6,8 @@ from typing import Optional
 from pandarallel import pandarallel
 from transformers import HfArgumentParser
 
-from laysummarisation.utils import (
-    lexrank_summarize,
-    load_jsonl_pandas,
-    load_multiple_df,
-    set_seed,
-)
+from laysummarisation.utils import (lexrank_summarize, load_jsonl_pandas,
+                                    load_multiple_df, set_seed)
 
 
 @dataclass
@@ -35,15 +31,19 @@ class Arguments:
     )
     nsent: Optional[int] = field(
         default=25,
-        metadata={"help": "The number of sentences to extract from the article."},
+        metadata={
+            "help": "The number of sentences to extract from the article."
+        },
     )
     all: Optional[bool] = field(
         default=False,
         metadata={"help": "Process all the articles."},
     )
-    seed: Optional[int] = field(default=42, metadata={"help": "The random seed."})
+    seed: Optional[int] = field(
+        default=None, metadata={"help": "The random seed."}
+    )
     workers: Optional[int] = field(
-        default=1,
+        default=None,
         metadata={"help": "The number of workers to use."},
     )
 
@@ -51,7 +51,10 @@ class Arguments:
 def main(conf: Arguments):
     if conf.workers is None:
         conf.workers = 1
-    pandarallel.initialize(nb_workers=conf.workers, progress_bar=True)
+    if conf.nrows == 0:
+        conf.nrows = None
+    if conf.workers is not None:
+        pandarallel.initialize(nb_workers=conf.workers, progress_bar=True)
 
     # Load files
     print("Loading files...")
@@ -73,7 +76,10 @@ def main(conf: Arguments):
 
     # LexRank summarise the articles
     print("Summarising articles...")
-    data["article"] = data["article"].parallel_apply(lexrank_summarize)
+    if conf.workers is None:
+        data["article"] = data["article"].apply(lexrank_summarize)
+    else:
+        data["article"] = data["article"].parallel_apply(lexrank_summarize)
 
     # Save the data
     print("Saving data...")
@@ -88,7 +94,5 @@ def main(conf: Arguments):
 if __name__ == "__main__":
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
-    if conf.nrows == 0:
-        conf.nrows = None
 
     main(conf)

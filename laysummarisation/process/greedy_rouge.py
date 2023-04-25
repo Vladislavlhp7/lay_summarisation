@@ -1,7 +1,7 @@
 import glob
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import nltk
 import numpy as np
@@ -29,26 +29,26 @@ class Arguments:
     corpus: str = field(
         metadata={"help": "The corpus to use."},
     )
-    nrows: Optional[int] = field(
-        default=None,
-        metadata={"help": "The number of entries to process. (0 for all)"},
-    )
-    nsent: Optional[int] = field(
-        default=25,
+    nsent: int = field(
+        default=10,
         metadata={
             "help": "The number of sentences to extract from the article."
         },
     )
+    seed: Optional[int] = field(
+        default=None, metadata={"help": "The random seed."}
+    )
+    workers: Union[int, None] = field(
+        default=None,
+        metadata={"help": "The number of workers to use."},
+    )
+    nrows: Optional[int] = field(
+        default=None,
+        metadata={"help": "The number of entries to process. (0 for all)"},
+    )
     all: Optional[bool] = field(
         default=False,
         metadata={"help": "Process all the articles."},
-    )
-    seed: Optional[int] = field(
-        default=42, metadata={"help": "The random seed."}
-    )
-    workers: Optional[int] = field(
-        default=1,
-        metadata={"help": "The number of workers to use."},
     )
 
 
@@ -114,15 +114,13 @@ def process_entry(entry: pd.Series, nsent: int):
 
 
 def main(conf: Arguments):
-    if conf.workers is None:
-        conf.workers = 1
-    pandarallel.initialize(nb_workers=conf.workers, progress_bar=True)
+    if conf.workers is not None:
+        pandarallel.initialize(nb_workers=conf.workers, progress_bar=True)
+    if conf.seed is not None:
+        set_seed(conf.seed)
 
     # Load files
     print("Loading files...")
-
-    if conf.seed is not None:
-        set_seed(conf.seed)
 
     # Load dataset
     if conf.all:
@@ -147,9 +145,14 @@ def main(conf: Arguments):
     # else:
     #     raise ValueError("Invalid mode")
 
-    data["article"] = data.parallel_apply(
-        lambda x: process_entry(x, nsent), axis=1
-    )
+    if conf.workers is None:
+        data["article"] = data.apply(
+            lambda x: process_entry(x, conf.nsent), axis=1
+        )
+    else:
+        data["article"] = data.parallel_apply(
+            lambda x: process_entry(x, conf.nsent), axis=1
+        )
 
     # Save the data
     print("Saving data...")
@@ -165,9 +168,5 @@ if __name__ == "__main__":
     nltk.download("punkt")
     parser = HfArgumentParser(Arguments)
     conf = parser.parse_args_into_dataclasses()[0]
-
-    # INFO: ZERO LOADS ALL LINES
-    if conf.nrows == 0:
-        conf.nrows = None
 
     main(conf)
