@@ -20,7 +20,9 @@ class LFParserConfig:
     )
     seed: int = field(
         default=42,
-        metadata={"help": "The random seed for model and training initialization"},
+        metadata={
+            "help": "The random seed for model and training initialization"
+        },
     )
     model_checkpoint: str = field(
         default="yikuan8/Clinical-Longformer",
@@ -59,7 +61,7 @@ class LFParserConfig:
         metadata={"help": "Whether to use early stopping for beam search"},
     )
     lr: float = field(
-        default=3e-5,
+        default=5e-5,
         metadata={"help": "The learning rate"},
     )
     batch_size: int = field(

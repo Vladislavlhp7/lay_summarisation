@@ -2,21 +2,28 @@
 
 SEED_DIR=./data/input/rouge
 MODEL="yikuan8/Clinical-Longformer"
+CORPUS="eLife"
 SEED=42
 
-python -m laysummarisation.model.train \
+python -m laysummarisation.model.clinical_longformer \
 	--ftrain "${SEED_DIR}/${CORPUS}_train.jsonl" \
 	--fvalid "${SEED_DIR}/${CORPUS}_val.jsonl" \
-	--output_dir tmp \
+	--save_dir tmp \
 	--seed ${SEED} \
 	--model_checkpoint ${MODEL} \
 	--device "gpu" \
-	--max_encode 4096 \
+	--max_encode 1028 \
 	--max_decode 1024 \
-	--lr 0.00003 \
-	--batch_size 4 \
-	--epochs 20 \
+	--min_encode 512 \
+	--attention_window 32 \
+	--nbeams 4 \
+	--length_penalty 2.0 \
+	--batch_size 1 \
+	--epochs 5 \
 	--save_steps 1000 \
-	--eval_steps 1000 \
+	--eval_steps 5000 \
 	--weight_decay 0.01 \
-	--metric "rouge2_f"
+	--warmup_steps 1500 \
+	--gradient_accum_steps 4 \
+	--metric "rouge2_f" \
+	--logging_steps 1000

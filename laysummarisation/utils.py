@@ -34,7 +34,9 @@ def preprocess(text):
         str: The preprocessed text.
     """
     text = remove_full_stop_after_et_al(text)
-    text = re.sub(r"\s+", " ", text)  # Replace multiple spaces with a single space
+    text = re.sub(
+        r"\s+", " ", text
+    )  # Replace multiple spaces with a single space
     regex = re.compile(r"\.([A-Z][a-z])")
     text = regex.sub(
         r". \1", text
@@ -84,7 +86,7 @@ def lexrank_summarize(article: str, sentence_count: int = 25) -> str:
 
 
 def process_data_to_model_inputs(
-    batch, tokenizer, max_input_length, max_output_length, pre_summarise=True
+    batch, tokenizer, max_input_length, max_output_length, pre_summarise=False
 ):
     """
     Tokenize and preprocess a batch of data for use as model inputs.
@@ -102,7 +104,9 @@ def process_data_to_model_inputs(
 
     if pre_summarise:
         # Use LexRank to summarize the articles in a batch
-        article_summary = [lexrank_summarize(article) for article in batch["article"]]
+        article_summary = [
+            lexrank_summarize(article) for article in batch["article"]
+        ]
     else:
         article_summary = batch["article"]
 
@@ -121,32 +125,30 @@ def process_data_to_model_inputs(
     )
 
     # Create a dictionary to store the preprocessed model inputs
-    processed_batch = {
-        "input_ids": inputs.input_ids,
-        "attention_mask": inputs.attention_mask,
-    }
+    batch["input_ids"] = inputs.input_ids
+    batch["attention_mask"] = inputs.attention_mask
 
     # Assign the tokenized inputs and attention masks to the processed batch dictionary
 
     # Create a list of 0s to use as the global attention mask
-    global_attention_mask = [
-        [0] * len(processed_batch["input_ids"][0])
-        for _ in range(len(processed_batch["input_ids"]))
+    batch["global_attention_mask"] = len(batch["input_ids"]) * [
+        [0 for _ in range(len(batch["input_ids"][0]))]
     ]
-    # Set the first element of the global attention mask to 1 to indicate the start of the sequence
-    global_attention_mask[0][0] = 1
-    processed_batch["global_attention_mask"] = global_attention_mask
+    batch["global_attention_mask"][0][0] = 1
+    batch["labels"] = outputs.input_ids
 
-    # Assign the tokenized outputs and label masks to the processed batch dictionary
-    processed_batch["labels"] = outputs.input_ids
-    # Replace the PAD tokens with -100 to ignore them during training
-    processed_batch["labels"] = [
-        [-100 if token == tokenizer.pad_token_id else token for token in labels]
-        for labels in processed_batch["labels"]
+    # since above lists are references, the following line changes the 0 index for all samples
+    # We have to make sure that the PAD token is ignored
+    batch["labels"] = [
+        [
+            -100 if token == tokenizer.pad_token_id else token
+            for token in labels
+        ]
+        for labels in batch["labels"]
     ]
 
     # Return the preprocessed model inputs as a dictionary
-    return processed_batch
+    return batch
 
 
 def load_article_dataset(fpath: str) -> Dataset:
@@ -234,7 +236,12 @@ def create_article_dataset_dict(
         # Set the format of the dataset to be used with PyTorch
         dataset.set_format(
             type="torch",
-            columns=["input_ids", "attention_mask", "global_attention_mask", "labels"],
+            columns=[
+                "input_ids",
+                "attention_mask",
+                "global_attention_mask",
+                "labels",
+            ],
         )
 
         # Add the preprocessed dataset to the datasets dictionary
@@ -351,7 +358,9 @@ def get_binary_sentence_dataset(fname: str):
     """
     df = pd.read_csv(fname)
     dataset = Dataset.from_pandas(df)
-    dataset = dataset.map(lambda x: {"label": int(x["label"])})  # convert label to int
+    dataset = dataset.map(
+        lambda x: {"label": int(x["label"])}
+    )  # convert label to int
     dataset = dataset.class_encode_column("label")  # convert label to one-hot
     return dataset
 
@@ -388,21 +397,32 @@ def load_binary_data(
     # Tokenize the sentences
     def tokenize(batch):
         return tokenizer(
-            batch["sentence"], padding=True, truncation=True, max_length=max_length
+            batch["sentence"],
+            padding=True,
+            truncation=True,
+            max_length=max_length,
         )
 
     train_dataset = train_dataset.map(
         tokenize, batched=True, batch_size=len(train_dataset)
     )
-    val_dataset = val_dataset.map(tokenize, batched=True, batch_size=len(val_dataset))
+    val_dataset = val_dataset.map(
+        tokenize, batched=True, batch_size=len(val_dataset)
+    )
     test_dataset = test_dataset.map(
         tokenize, batched=True, batch_size=len(test_dataset)
     )
 
     # Set the format to pytorch
-    train_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
-    val_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
-    test_dataset.set_format("torch", columns=["input_ids", "attention_mask", "label"])
+    train_dataset.set_format(
+        "torch", columns=["input_ids", "attention_mask", "label"]
+    )
+    val_dataset.set_format(
+        "torch", columns=["input_ids", "attention_mask", "label"]
+    )
+    test_dataset.set_format(
+        "torch", columns=["input_ids", "attention_mask", "label"]
+    )
 
     return train_dataset, val_dataset, test_dataset
 
@@ -478,7 +498,10 @@ def compute_readability_metrics(summaries):
     macro_averaged_readability_metrics = {}
     for metric in readability_metrics[0].keys():
         macro_averaged_readability_metrics[metric] = np.mean(
-            [readability_metric[metric] for readability_metric in readability_metrics]
+            [
+                readability_metric[metric]
+                for readability_metric in readability_metrics
+            ]
         )
 
     # Return the macro averaged readability metrics

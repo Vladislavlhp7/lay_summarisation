@@ -1,51 +1,63 @@
 import os
 
 import torch
-from torch.utils.data import Dataset
-from transformers import (HfArgumentParser, LEDConfig,
-                          LEDForConditionalGeneration, LEDTokenizer,
-                          Seq2SeqTrainer, Seq2SeqTrainingArguments)
+from datasets import Dataset
+from transformers import (
+    HfArgumentParser,
+    LEDConfig,
+    LEDForConditionalGeneration,
+    LEDTokenizer,
+    Seq2SeqTrainer,
+    Seq2SeqTrainingArguments,
+)
 
 from laysummarisation.config import LFParserConfig
-from laysummarisation.utils import compute_metrics, load_jsonl_pandas, set_seed
+from laysummarisation.utils import (
+    compute_metrics,
+    load_jsonl_pandas,
+    process_data_to_model_inputs,
+    set_seed,
+)
 
-
-class eLifeDataset(Dataset):
-    def __init__(
-        self, df, tokenizer, max_input_length=1024, max_output_length=64
-    ):
-        self.df = df
-        self.tokenizer = tokenizer
-        self.max_input_length = max_input_length
-        self.max_output_length = max_output_length
-
-    def __len__(self):
-        return len(self.df)
-
-    def __getitem__(self, idx):
-        row = self.df.iloc[idx]
-        article, lay_summary = row["article"], row["lay_summary"]
-
-        input_tokenized = self.tokenizer(
-            article,
-            return_tensors="pt",
-            max_length=self.max_input_length,
-            truncation=True,
-            padding="max_length",
-        )
-
-        target_tokenized = self.tokenizer(
-            lay_summary,
-            return_tensors="pt",
-            max_length=self.max_output_length,
-            truncation=True,
-            padding="max_length",
-        )
-
-        input_ids = input_tokenized["input_ids"].squeeze()
-        target_ids = target_tokenized["input_ids"].squeeze()
-
-        return {"input_ids": input_ids, "labels": target_ids}
+# class eLifeDataset(Dataset):
+#     def __init__(
+#         self, df, tokenizer, max_input_length=1024, max_output_length=1024
+#     ):
+#         self.df = df
+#         self.tokenizer = tokenizer
+#         self.max_input_length = max_input_length
+#         self.max_output_length = max_output_length
+#
+#     def __len__(self):
+#         return len(self.df)
+#
+#     def __getitem__(self, idx):
+#         row = self.df.iloc[idx]
+#         print(row.shape)
+#
+#         article, lay_summary = row["article"], row["lay_summary"]
+#
+#         input_tokenized = self.tokenizer(
+#             article,
+#             return_tensors="pt",
+#             max_length=self.max_input_length,
+#             truncation=True,
+#             padding="max_length",
+#         )
+#
+#         target_tokenized = self.tokenizer(
+#             lay_summary,
+#             return_tensors="pt",
+#             max_length=self.max_output_length,
+#             truncation=True,
+#             padding="max_length",
+#         )
+#
+#         input_ids = input_tokenized["input_ids"].squeeze()
+#         target_ids = target_tokenized["input_ids"].squeeze()
+#
+#         return {"input_ids": input_ids, "labels": target_ids}
+#
 
 
 def train(conf: LFParserConfig):
@@ -110,10 +122,34 @@ def train(conf: LFParserConfig):
     train_df = load_jsonl_pandas(conf.ftrain)
     eval_df = load_jsonl_pandas(conf.fvalid)
 
-    train_dataset = eLifeDataset(train_df, tokenizer)
-    eval_dataset = eLifeDataset(eval_df, tokenizer)
+    train_dataset = Dataset.from_pandas(train_df).map(
+        lambda x: process_data_to_model_inputs(
+            x, tokenizer, conf.max_encode, conf.max_decode
+        ),
+        batched=True,
+        batch_size=conf.batch_size,
+        remove_columns=["article", "lay_summary"],
+    )
 
-    # WARN: This does not work
+    eval_dataset = Dataset.from_pandas(eval_df).map(
+        lambda x: process_data_to_model_inputs(
+            x, tokenizer, conf.max_encode, conf.max_decode
+        ),
+        batched=True,
+        batch_size=conf.batch_size,
+        remove_columns=["article", "lay_summary"],
+    )
+
+    train_dataset.set_format(
+        type="torch",
+        columns=[
+            "input_ids",
+            "attention_mask",
+            "global_attention_mask",
+            "labels",
+        ],
+    )
+
     trainer = Seq2SeqTrainer(
         model=model,
         args=args,
@@ -133,7 +169,4 @@ def main(conf):
 if __name__ == "__main__":
     parser = HfArgumentParser(LFParserConfig)
     conf = parser.parse_args_into_dataclasses()[0]
-    if conf.nrows == 0:
-        conf.nrows = None
-
     main(conf)
