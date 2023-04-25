@@ -165,7 +165,4 @@ def main(conf):
 if __name__ == "__main__":
     parser = HfArgumentParser(LFParserConfig)
     conf = parser.parse_args_into_dataclasses()[0]
-    if conf.nrows == 0:
-        conf.nrows = None
-
     main(conf)
