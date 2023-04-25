@@ -85,6 +85,7 @@ def process(datapoint):
 
 processed = process(datapoint)
 
+# TODO: Preprocess with Vlad's model
 st.subheader("Pre-processing: Rouge Maximisation")
 if st.checkbox("Show pre-processing"):
     st.text_area(

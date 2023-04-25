@@ -19,46 +19,6 @@ from laysummarisation.utils import (
     set_seed,
 )
 
-# class eLifeDataset(Dataset):
-#     def __init__(
-#         self, df, tokenizer, max_input_length=1024, max_output_length=1024
-#     ):
-#         self.df = df
-#         self.tokenizer = tokenizer
-#         self.max_input_length = max_input_length
-#         self.max_output_length = max_output_length
-#
-#     def __len__(self):
-#         return len(self.df)
-#
-#     def __getitem__(self, idx):
-#         row = self.df.iloc[idx]
-#         print(row.shape)
-#
-#         article, lay_summary = row["article"], row["lay_summary"]
-#
-#         input_tokenized = self.tokenizer(
-#             article,
-#             return_tensors="pt",
-#             max_length=self.max_input_length,
-#             truncation=True,
-#             padding="max_length",
-#         )
-#
-#         target_tokenized = self.tokenizer(
-#             lay_summary,
-#             return_tensors="pt",
-#             max_length=self.max_output_length,
-#             truncation=True,
-#             padding="max_length",
-#         )
-#
-#         input_ids = input_tokenized["input_ids"].squeeze()
-#         target_ids = target_tokenized["input_ids"].squeeze()
-#
-#         return {"input_ids": input_ids, "labels": target_ids}
-#
-
 
 def train(conf: LFParserConfig):
     print("CUDA available:" + str(torch.cuda.is_available()))
@@ -141,6 +101,16 @@ def train(conf: LFParserConfig):
     )
 
     train_dataset.set_format(
+        type="torch",
+        columns=[
+            "input_ids",
+            "attention_mask",
+            "global_attention_mask",
+            "labels",
+        ],
+    )
+
+    eval_dataset.set_format(
         type="torch",
         columns=[
             "input_ids",
