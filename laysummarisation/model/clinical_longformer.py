@@ -1,7 +1,7 @@
 import os
 
 import torch
-from torch.utils.data import Dataset
+from datasets import Dataset
 from transformers import (
     HfArgumentParser,
     LEDConfig,
@@ -122,14 +122,14 @@ def train(conf: LFParserConfig):
     train_df = load_jsonl_pandas(conf.ftrain)
     eval_df = load_jsonl_pandas(conf.fvalid)
 
-    train_dataset = train_df.map(
+    train_dataset = Dataset.from_pandas(train_df).map(
         process_data_to_model_inputs,
         batched=True,
         batch_size=conf.batch_size,
         remove_columns=["article", "lay_summary"],
     )
 
-    eval_dataset = eval_df.map(
+    eval_dataset = Dataset.from_pandas(eval_df).map(
         process_data_to_model_inputs,
         batched=True,
         batch_size=conf.batch_size,
