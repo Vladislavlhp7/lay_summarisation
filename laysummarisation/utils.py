@@ -125,35 +125,30 @@ def process_data_to_model_inputs(
     )
 
     # Create a dictionary to store the preprocessed model inputs
-    processed_batch = {
-        "input_ids": inputs.input_ids,
-        "attention_mask": inputs.attention_mask,
-    }
+    batch["input_ids"] = inputs.input_ids
+    batch["attention_mask"] = inputs.attention_mask
 
     # Assign the tokenized inputs and attention masks to the processed batch dictionary
 
     # Create a list of 0s to use as the global attention mask
-    global_attention_mask = [
-        [0] * len(processed_batch["input_ids"][0])
-        for _ in range(len(processed_batch["input_ids"]))
+    batch["global_attention_mask"] = len(batch["input_ids"]) * [
+        [0 for _ in range(len(batch["input_ids"][0]))]
     ]
-    # Set the first element of the global attention mask to 1 to indicate the start of the sequence
-    global_attention_mask[0][0] = 1
-    processed_batch["global_attention_mask"] = global_attention_mask
+    batch["global_attention_mask"][0][0] = 1
+    batch["labels"] = outputs.input_ids
 
-    # Assign the tokenized outputs and label masks to the processed batch dictionary
-    processed_batch["labels"] = outputs.input_ids
-    # Replace the PAD tokens with -100 to ignore them during training
-    processed_batch["labels"] = [
+    # since above lists are references, the following line changes the 0 index for all samples
+    # We have to make sure that the PAD token is ignored
+    batch["labels"] = [
         [
             -100 if token == tokenizer.pad_token_id else token
             for token in labels
         ]
-        for labels in processed_batch["labels"]
+        for labels in batch["labels"]
     ]
 
     # Return the preprocessed model inputs as a dictionary
-    return processed_batch
+    return batch
 
 
 def load_article_dataset(fpath: str) -> Dataset:
