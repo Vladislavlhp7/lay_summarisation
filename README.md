@@ -4,8 +4,7 @@ Project as part of COMP34812: Natural Language Understanding
 
 # TODO
 
-
-General Theme: Attempt to find a way to fit the necessary contextual information into the limit context size for the T5 model. 
+General Theme: Attempt to find a way to fit the necessary contextual information into the limit context size for the T5 model.
 
 ## General
 
@@ -23,15 +22,15 @@ General Theme: Attempt to find a way to fit the necessary contextual information
 
 ## Vlad
 
-- 
+-
 
 ## Ahmed
 
-- 
+-
 
 ## Marc
 
-- 
+-
 
 ## Installation
 
@@ -82,6 +81,7 @@ For the weights, clone the following repo into the `weights` folder:
 First download the data and weights as described above.
 
 Then run the following pre-processing code to pre-process the entire dataset:
+
 ```shell
 ./scripts/process_all.sh
 ```
