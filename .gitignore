@@ -4,6 +4,7 @@ tmp
 weights/*
 data/*
 uber.py
+wandb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
