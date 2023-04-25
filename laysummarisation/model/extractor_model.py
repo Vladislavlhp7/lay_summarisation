@@ -7,9 +7,8 @@ from scipy.special import softmax
 from transformers import (BertForSequenceClassification, BertTokenizerFast,
                           HfArgumentParser, Trainer, TrainingArguments, BertConfig)
 
-import utils
 from laysummarisation.utils import (compute_binary_metrics, load_binary_data,
-                                    set_seed)
+                                    set_seed, sentence_tokenize, preprocess)
 
 
 @dataclass
@@ -56,9 +55,9 @@ def generate_summary(model_path: str, article: str, max_length: int = 512, devic
     model.load_state_dict(torch.load(output_model_file, map_location=device))
 
     # Prepare article for sentence tokenization
-    article_cleaned = utils.preprocess(article)
+    article_cleaned = preprocess(article)
     # Segment article into sentences
-    article_segmented = utils.sentence_tokenize(article)
+    article_segmented = sentence_tokenize(article)
     # Tokenize article sentences
     article_tokenized = tokenizer(article_segmented, padding=True, truncation=True, return_tensors="pt", max_length=max_length)
 
