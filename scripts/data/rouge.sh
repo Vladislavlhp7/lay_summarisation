@@ -11,7 +11,7 @@ python -m laysummarisation.process.greedy_rouge \
 	--output_dir "${SAVE_DIR}" \
 	--corpus "${CORPUS}" \
 	--nrows 0 \
-	--nsent 25 \
+	--nsent 10 \
 	--seed 42 \
 	--workers 6
 # --all \
