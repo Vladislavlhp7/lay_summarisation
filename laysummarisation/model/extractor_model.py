@@ -81,7 +81,7 @@ def generate_summary(model, tokenizer, article: str, max_length: int = 512, top_
     # Prepare article for sentence tokenization
     article_cleaned = preprocess(article)
     # Segment article into sentences
-    article_segmented = sentence_tokenize(article)
+    article_segmented = sentence_tokenize(article_cleaned)
     # Convert sentences to dataset
     article_df = pd.DataFrame({"sentence": article_segmented})
     article_dataset = Dataset.from_pandas(article_df)
@@ -100,14 +100,18 @@ def generate_summary(model, tokenizer, article: str, max_length: int = 512, top_
     with torch.no_grad():
         outputs = trainer.predict(article_dataset)
         predictions = torch.tensor(softmax(outputs.predictions, axis=1))
-        # Take Top-K sentences in natural order
-        top_k_indices = torch.topk(predictions[:, 1], k=top_k).indices
+        # Sort probabilities based on the second element per list in descending order
+        sorted_indices = torch.argsort(predictions[:, 1], descending=True)
+        # Filter probabilities > 0.5
+        filtered_indices = sorted_indices[predictions[sorted_indices, 1] > 0.5]
+        # Take Top-K sentences in natural order where predictions are > 0.5
+        top_k_indices = filtered_indices[:top_k]
         # Sort indices in ascending order
-        top_k_indices = top_k_indices.sort().indices
+        top_k_indices = top_k_indices.sort().values
         top_k_sentences = [article_segmented[i] for i in top_k_indices]
         summary = " ".join(top_k_sentences)
     # trim summary to max_length words
-    summary = " ".join(summary.split()[:max_length])
+    # summary = " ".join(summary.split()[:max_length])
     return summary
 
 
