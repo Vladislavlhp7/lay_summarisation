@@ -14,4 +14,5 @@ module load compilers/gcc/9.3.0
 SEED_DIR=./data/tmp/extractive/rouge
 
 python -m laysummarisation.model.extractor_model \
-  --fname ${SEED_DIR}/${CORPUS}_train.csv
+  --fname ${SEED_DIR}/${CORPUS}_train.csv \
+  --lr 5e-5
