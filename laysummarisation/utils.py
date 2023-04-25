@@ -425,7 +425,10 @@ def compute_binary_metrics(pred):
         recall = tp / (tp + fn)
     except ZeroDivisionError:
         recall = 0
-    f1 = 2 * precision * recall / (precision + recall)
+    try:
+        f1 = 2 * precision * recall / (precision + recall)
+    except ZeroDivisionError:
+        f1 = 0
 
     return {
         "accuracy": acc,
