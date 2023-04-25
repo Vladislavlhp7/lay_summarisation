@@ -18,11 +18,12 @@ python -m laysummarisation.model.clinical_longformer \
 	--attention_window 32 \
 	--nbeams 4 \
 	--length_penalty 2.0 \
-	--lr 0.00003 \
 	--batch_size 1 \
 	--epochs 5 \
 	--save_steps 1000 \
-	--eval_steps 1000 \
+	--eval_steps 5000 \
 	--weight_decay 0.01 \
+	--warmup_steps 1500 \
+	--gradient_accum_steps 4 \
 	--metric "rouge2_f" \
 	--logging_steps 1000
