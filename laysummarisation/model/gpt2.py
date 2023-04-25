@@ -46,30 +46,30 @@ def compute_metrics(eval_pred, tokenizer: GPT2Tokenizer) -> dict:
 
 
 def main():
-    print("CUDA available:" + str(torch.cuda.is_available()))
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    if device == "cuda":
-        torch.cuda.empty_cache()
+    # print("CUDA available:" + str(torch.cuda.is_available()))
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
+    # if device == "cuda":
+    #     torch.cuda.empty_cache()
 
-    # Load files
-    print("Loading files...")
+    # # Load files
+    # print("Loading files...")
 
     model_name = "gpt2"
     config = GPT2Config.from_pretrained(model_name)
     config.task_specific_params = {
-        'text-generation': {'do_sample': True, 'max_length': 300, 'temperature': 0.7}
+        'text-generation': {'do_sample': True, 'max_length': 256, 'temperature': 0.7}
     }
     tokenizer = GPT2Tokenizer.from_pretrained(model_name)
     tokenizer.pad_token = tokenizer.eos_token
     model = GPT2LMHeadModel.from_pretrained(model_name, config=config)
 
-    model.to(device)
+    # model.to(device)
 
     training_args = TrainingArguments(
         output_dir="./lay_summary_model",
         overwrite_output_dir=True,
         num_train_epochs=3,
-        per_device_train_batch_size=2,
+        per_device_train_batch_size=1,
         save_steps=10_000,
         save_total_limit=2,
         evaluation_strategy="epoch",
