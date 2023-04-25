@@ -22,10 +22,6 @@ class LFParserConfig:
         default=42,
         metadata={"help": "The random seed for model and training initialization"},
     )
-    pre_summarise: bool = field(
-        default=False,
-        metadata={"help": "Whether to pre-summarise the articles"},
-    )
     model_checkpoint: str = field(
         default="yikuan8/Clinical-Longformer",
         metadata={"help": "The model checkpoint path or name."},
@@ -46,6 +42,10 @@ class LFParserConfig:
         default=128,
         metadata={"help": "The min token length for the encoder"},
     )
+    max_decode: int = field(
+        default=1024,
+        metadata={"help": "The max token length for the decoder"},
+    )
     nbeams: int = field(
         default=4,
         metadata={"help": "The number of beams for beam search"},
@@ -57,11 +57,6 @@ class LFParserConfig:
     early_stopping: bool = field(
         default=True,
         metadata={"help": "Whether to use early stopping for beam search"},
-    )
-
-    max_decode: int = field(
-        default=1024,
-        metadata={"help": "The max token length for the decoder"},
     )
     lr: float = field(
         default=3e-5,
@@ -75,6 +70,10 @@ class LFParserConfig:
         default=20,
         metadata={"help": "The number of epochs"},
     )
+    weight_decay: float = field(
+        default=0.01,
+        metadata={"help": "The weight decay for training"},
+    )
     save_steps: int = field(
         default=1000,
         metadata={"help": "The number of steps to save the model"},
@@ -82,10 +81,6 @@ class LFParserConfig:
     eval_steps: int = field(
         default=1000,
         metadata={"help": "The number of steps to evaluate the model"},
-    )
-    weight_decay: float = field(
-        default=0.01,
-        metadata={"help": "The weight decay for training"},
     )
     metric: str = field(
         default="rouge2_f",

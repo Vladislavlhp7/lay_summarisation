@@ -10,13 +10,8 @@ from pandarallel import pandarallel
 from rouge_score import rouge_scorer
 from transformers import HfArgumentParser
 
-from laysummarisation.utils import (
-    load_jsonl_pandas,
-    load_multiple_df,
-    preprocess,
-    sentence_tokenize,
-    set_seed,
-)
+from laysummarisation.utils import (load_jsonl_pandas, load_multiple_df,
+                                    preprocess, sentence_tokenize, set_seed)
 
 
 @dataclass
@@ -131,7 +126,7 @@ def main(conf: Arguments):
     else:
         assert conf.corpus != "all"
         data = load_jsonl_pandas(
-            os.path.join(conf.data_dir, f"{conf.corpus}_train.jsonl"),
+            os.path.join(conf.data_dir, f"{conf.corpus}_val.jsonl"),
             nrows=conf.nrows,
         )
 
@@ -151,7 +146,7 @@ def main(conf: Arguments):
     # Save the data
     print("Saving data...")
     data.to_json(
-        os.path.join(conf.output_dir, f"{conf.corpus}_train.jsonl"),
+        os.path.join(conf.output_dir, f"{conf.corpus}_val.jsonl"),
         orient="records",
         lines=True,
     )
