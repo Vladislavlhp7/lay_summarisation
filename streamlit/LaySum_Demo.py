@@ -8,11 +8,7 @@ Hint: Check how you connect a port to CSF such as for Jupyter.
 Now check if you can do the same for Streamlit.
 """
 
-import sys
-
 import streamlit as st
-
-sys.path.append("../laysummarisation")
 from laysummarisation.process.greedy_rouge import process_entry
 from laysummarisation.utils import load_jsonl_pandas, set_seed
 
