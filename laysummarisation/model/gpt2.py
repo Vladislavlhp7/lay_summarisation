@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-
+import gc
 import pandas as pd
 import torch
 # import wandb
@@ -11,6 +11,11 @@ from sklearn.model_selection import train_test_split
 from transformers import (GPT2Config, GPT2LMHeadModel,
                           GPT2Tokenizer, HfArgumentParser, Trainer,
                           TrainingArguments)
+
+
+torch.emptycache()
+
+gc.collect()
 
 
 def build_inputs(text: str, summary: str, tokenizer: GPT2Tokenizer, max_length: int = 1024) -> dict:
@@ -76,8 +81,8 @@ def main():
         learning_rate=5e-5,
     )
 
-    train_df = pd.read_json("./data/input/rouge/eLife_train.jsonl", lines=True)
-    eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True)
+    train_df = pd.read_json("./data/input/rouge/eLife_train.jsonl", lines=True).head(100)
+    eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True).head(10)
 
     # Create the train and evaluation datasets
     train_dataset = [build_inputs(row['article'], row['lay_summary'], tokenizer) for _, row in train_df.iterrows()]
