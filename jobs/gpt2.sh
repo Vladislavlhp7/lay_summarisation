@@ -12,6 +12,6 @@ module load libs/nvidia-hpc-sdk/23.1
 module load compilers/gcc/9.3.0
 
 export OMP_NUM_THREADS=$NSLOTS
-
+source activate nlu
 ./scripts/train/gpt2.sh
 
