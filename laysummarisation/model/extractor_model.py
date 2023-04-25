@@ -102,8 +102,8 @@ def generate_summary(model, tokenizer, article: str, max_length: int = 512, top_
         predictions = torch.tensor(softmax(outputs.predictions, axis=1))
         # Sort probabilities based on the second element per list in descending order
         sorted_indices = torch.argsort(predictions[:, 1], descending=True)
-        # Filter probabilities > 0.5
-        filtered_indices = sorted_indices[predictions[sorted_indices, 1] > 0.5]
+        # Filter probabilities >= 0.5
+        filtered_indices = sorted_indices[predictions[sorted_indices, 1] >= 0.5]
         # Take Top-K sentences in natural order where predictions are > 0.5
         top_k_indices = filtered_indices[:top_k]
         # Sort indices in ascending order
