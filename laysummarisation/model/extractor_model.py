@@ -129,7 +129,7 @@ def main(conf: Arguments):
         metrics = {f"test/{k}": v for k, v in metrics.items()}
         print(metrics)
         wandb.log(metrics)
-    trainer.save_model(model_name)
+    trainer.save_model(f'{model_name}_{conf.lr}')
 
 
 if __name__ == "__main__":
