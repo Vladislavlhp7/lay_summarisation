@@ -417,8 +417,14 @@ def compute_binary_metrics(pred):
 
     tn, fp, fn, tp = cm.TN[0], cm.FP[0], cm.FN[0], cm.TP[0]
     acc = (tp + tn) / (tp + tn + fp + fn)
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
+    try:
+        precision = tp / (tp + fp)
+    except ZeroDivisionError:
+        precision = 0
+    try:
+        recall = tp / (tp + fn)
+    except ZeroDivisionError:
+        recall = 0
     f1 = 2 * precision * recall / (precision + recall)
 
     return {
