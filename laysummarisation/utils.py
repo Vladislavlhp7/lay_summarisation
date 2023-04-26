@@ -10,12 +10,12 @@ import torch
 from datasets import Dataset, DatasetDict
 from nltk import sent_tokenize
 from readability import Readability
+from rouge_score import rouge_scorer
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
 from transformers import BertTokenizerFast
-from rouge_score import rouge_scorer
 
 
 def load_multiple_df(paths: List[str], nrows=None) -> pd.DataFrame:
@@ -40,13 +40,16 @@ def remove_citations(text: str) -> str:
     additional = "(?:,? (?:(?:and |& )?" + author + "|" + etal + "))"
     year_num = "(?:19|20)[0-9][0-9]"
     page_num = "(?:, p.? [0-9]+)?"  # Always optional
-    year = "(?:, *" + year_num + page_num + "| *\(" + year_num + page_num + "\))"
+    year = (
+        "(?:, *" + year_num + page_num + "| *\(" + year_num + page_num + "\))"
+    )
     regex = "(" + author + additional + "*" + year + ")"
     text = re.sub(regex, "", text)
     # remove inline bracketed citations, e.g., [1], [2,3], [4-6], [7, 8, 9]
     text = re.sub(r"\[[0-9]+(?:-[0-9]+)?]", "", text)
     text = re.sub(r"\[\d+(?:,\s*\d+)+]", "", text)
     return text
+
 
 def preprocess(text):
     """
@@ -305,7 +308,7 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
         pred: A NamedTuple containing 'predictions' and 'label_ids' Tensors.
               'predictions' is a Tensor of predicted token IDs.
               'label_ids' is a Tensor of the ground truth token IDs.
-        tokenizer: The tokenizer instance used for decoding the predictions and labels.
+        tokenizer: The tokenizer instance used for decoding the predictions and l abels.
 
     Returns:
         A dictionary with Rouge2 Precision, Recall, and F-measure.
@@ -318,7 +321,7 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
     # Load the Rouge metric from the datasets library
     # rouge = evaluate.load("rouge")
 
-    rouge = rouge_scorer.RougeScorer(['rouge2'])
+    rouge = rouge_scorer.RougeScorer(["rouge2"])
 
     # Decode the predicted and label IDs to strings, skipping special tokens
     pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
@@ -332,7 +335,9 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
     print("pred_str", pred_str)
     print("label_str", label_str)
 
-    rouge_output = [rouge.score(l, p)["rouge2"] for l, p in zip(label_str, pred_str)]
+    rouge_output = [
+        rouge.score(l, p)["rouge2"] for l, p in zip(label_str, pred_str)
+    ]
 
     avg_precision = np.mean([r.precision for r in rouge_output])
     avg_recall = np.mean([r.recall for r in rouge_output])
