@@ -1,32 +1,38 @@
-import torch
-from laysummarisation.utils import compute_metrics
-import wandb
 import pandas as pd
+import torch
+from transformers import (DataCollatorForSeq2Seq, Seq2SeqTrainer,
+                          Seq2SeqTrainingArguments, T5ForConditionalGeneration,
+                          T5Tokenizer, TextDataset)
 
-from transformers import (
-    T5Tokenizer,
-    T5ForConditionalGeneration,
-    TextDataset,
-    DataCollatorForSeq2Seq,
-    Seq2SeqTrainingArguments,
-    Seq2SeqTrainer
-)
+import wandb
+from laysummarisation.utils import compute_metrics
 
 
 def process_data_to_model_inputs(batch, tokenizer):
     """
     Preprocesses data into model inputs.
-    
+
     Args:
         batch: A dictionary containing 'article' and 'lay_summary'.
         tokenizer: The tokenizer.
-    
+
     Returns:
         A dictionary containing 'input_ids', 'attention_mask', and 'labels'.
     """
-    inputs = tokenizer(batch['article'], padding='max_length', truncation=True, max_length=512, return_tensors="pt")
-    outputs = tokenizer(batch['lay_summary'], padding='max_length', truncation=True, max_length=128,
-                        return_tensors="pt")
+    inputs = tokenizer(
+        batch["article"],
+        padding="max_length",
+        truncation=True,
+        max_length=512,
+        return_tensors="pt",
+    )
+    outputs = tokenizer(
+        batch["lay_summary"],
+        padding="max_length",
+        truncation=True,
+        max_length=128,
+        return_tensors="pt",
+    )
 
     inputs["input_ids"] = inputs["input_ids"].squeeze()
     inputs["attention_mask"] = inputs["attention_mask"].squeeze()
@@ -56,7 +62,7 @@ def main():
     # eval_df = pd.read_json("../../laySummarisation/data/input/rouge/eLife_val.jsonl", lines=True)
 
     # Load Tokenizer and Model
-    model_name = "../clinical-t5/1.0.0/Clinical-T5-Sci/"
+    model_name = "../weights/Clinical-T5-Sci/"
     tokenizer = T5Tokenizer.from_pretrained(model_name)
     model = T5ForConditionalGeneration.from_pretrained(model_name)
 
@@ -64,17 +70,17 @@ def main():
         tokenizer=tokenizer,
         file_path="./data/input/rouge/eLife_train.jsonl",
         column_names=["article", "lay_summary"],
-        block_size=512,
+        block_size=1024,
     )
     eval_dataset = TextDataset(
         tokenizer=tokenizer,
         file_path="./data/input/rouge/eLife_val.jsonl",
         column_names=["article", "lay_summary"],
-        block_size=512,
+        block_size=1024,
     )
 
     training_args = Seq2SeqTrainingArguments(
-        output_dir="./results",
+        output_dir="./tmp/t5",
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,
         predict_with_generate=True,
