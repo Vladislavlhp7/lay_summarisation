@@ -75,6 +75,33 @@ class Arguments:
         metadata={"help": "The number of steps between saving checkpoints"},
     )
 
+def generate_summary(model, tokenizer, article: str, max_length: int = 512, args: TrainingArguments = None):
+    """
+    Generate summary from the GPT-2 model
+    Args:
+        model: The model.
+        tokenizer: The tokenizer.
+        article: The article to summarise.
+        max_length: The maximum number of tokens to generate.
+        args: The input arguments to the Trainer.
+    Returns:
+        summary (str): The generated summary.
+    """
+    model.eval()
+    with torch.no_grad():
+        input_ids = tokenizer.encode(
+            "Simplify: " + article, return_tensors="pt", max_length=max_length, truncation=True, padding="max_length"
+        )
+
+        if  torch.cuda.is_available():
+            input_ids = input_ids.to("cuda")
+
+        output = model.generate(input_ids, max_length=max_length, num_return_sequences=1)
+
+    summary = tokenizer.decode(output[0], skip_special_tokens=True)
+    return summary
+
+
 
 def build_inputs(
     batch, tokenizer: GPT2Tokenizer, max_length: int = 1024, summary_prefix: str = "Simplify: "
