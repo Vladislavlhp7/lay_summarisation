@@ -77,6 +77,7 @@ def train(conf: LFParserConfig):
         weight_decay=conf.weight_decay,
         run_name=model_name,
         report_to=["wandb"],
+        eval_steps=conf.eval_steps,
     )
 
     train_df = load_jsonl_pandas(conf.ftrain)

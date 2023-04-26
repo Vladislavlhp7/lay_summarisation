@@ -15,6 +15,7 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.utils import get_stop_words
 from transformers import BertTokenizerFast
+from rouge_score import rouge_scorer
 
 
 def load_multiple_df(paths: List[str], nrows=None) -> pd.DataFrame:
@@ -86,7 +87,7 @@ def lexrank_summarize(article: str, sentence_count: int = 25) -> str:
 
 
 def process_data_to_model_inputs(
-    batch, tokenizer, max_input_length, max_output_length, pre_summarise=False
+    batch, tokenizer, max_input_length, max_output_length
 ):
     """
     Tokenize and preprocess a batch of data for use as model inputs.
@@ -102,17 +103,9 @@ def process_data_to_model_inputs(
     dict: A dictionary containing the preprocessed model inputs for the batch.
     """
 
-    if pre_summarise:
-        # Use LexRank to summarize the articles in a batch
-        article_summary = [
-            lexrank_summarize(article) for article in batch["article"]
-        ]
-    else:
-        article_summary = batch["article"]
-
     # Tokenize the inputs and outputs using the provided tokenizer
     inputs = tokenizer(
-        article_summary,
+        batch["article"],
         padding="max_length",
         truncation=True,
         max_length=max_input_length,
@@ -298,26 +291,33 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
     pred_ids = pred.predictions
 
     # Load the Rouge metric from the datasets library
-    rouge = evaluate.load("rouge")
+    # rouge = evaluate.load("rouge")
+
+    rouge = rouge_scorer.RougeScorer(['rouge2'])
 
     # Decode the predicted and label IDs to strings, skipping special tokens
     pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
     labels_ids[labels_ids == -100] = tokenizer.pad_token_id
     label_str = tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
 
+    # print(f"{pred_str.shape=}")
+    # print(f"{label_str.shape=}")
+
     # Compute Rouge2 scores for the predictions and labels
-    rouge_output = rouge.compute(
-        predictions=pred_str,
-        references=label_str,
-        rouge_types=["rouge2"],
-        use_aggregator=True,
-    )["rouge2"]
+    print("pred_str", pred_str)
+    print("label_str", label_str)
+
+    rouge_output = [rouge.score(l, p)["rouge2"] for l, p in zip(label_str, pred_str)]
+
+    avg_precision = np.mean([r.precision for r in rouge_output])
+    avg_recall = np.mean([r.recall for r in rouge_output])
+    avg_fmeasure = np.mean([r.fmeasure for r in rouge_output])
 
     # Round the Rouge2 scores to 4 decimal places and return them in a dictionary
     return {
-        "rouge2_precision": round(rouge_output.precision, 4),
-        "rouge2_recall": round(rouge_output.recall, 4),
-        "rouge2_fmeasure": round(rouge_output.fmeasure, 4),
+        "rouge2_precision": round(avg_precision, 4),
+        "rouge2_recall": round(avg_recall, 4),
+        "rouge2_fmeasure": round(avg_fmeasure, 4),
     }
 
 
