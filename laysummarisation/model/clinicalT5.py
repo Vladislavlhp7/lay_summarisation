@@ -1,6 +1,7 @@
 import torch
 from laysummarisation.utils import compute_metrics
 import wandb
+from datasets import load_dataset
 import pandas as pd
 
 from transformers import (
@@ -41,7 +42,6 @@ def process_data_to_model_inputs(batch, tokenizer):
         "labels": labels,
     }
 
-
 def main():
     print("CUDA available:" + str(torch.cuda.is_available()))
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -60,18 +60,13 @@ def main():
     tokenizer = T5Tokenizer.from_pretrained(model_name)
     model = T5ForConditionalGeneration.from_pretrained(model_name)
 
-    train_dataset = TextDataset(
-        tokenizer=tokenizer,
-        file_path="./data/input/rouge/eLife_train.jsonl",
-        column_names=["article", "lay_summary"],
-        block_size=512,
-    )
-    eval_dataset = TextDataset(
-        tokenizer=tokenizer,
-        file_path="./data/input/rouge/eLife_val.jsonl",
-        column_names=["article", "lay_summary"],
-        block_size=512,
-    )
+    # Load the dataset
+    dataset = load_dataset("json", data_files={"train": "./data/input/rouge/eLife_train.jsonl", "eval": "./data/input/rouge/eLife_val.jsonl"}, split=["train", "eval"], lines=True)
+
+    # Tokenize the dataset
+    train_dataset = dataset["train"].map(lambda x: process_data_to_model_inputs(x, tokenizer), batched=True, remove_columns=["article", "lay_summary"])
+    eval_dataset = dataset["eval"].map(lambda x: process_data_to_model_inputs(x, tokenizer), batched=True, remove_columns=["article", "lay_summary"])
+
 
     training_args = Seq2SeqTrainingArguments(
         output_dir="./results",
