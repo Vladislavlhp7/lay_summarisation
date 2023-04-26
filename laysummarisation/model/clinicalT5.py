@@ -72,6 +72,10 @@ def main():
     tokenizer = T5Tokenizer.from_pretrained(model_name)
     model = T5ForConditionalGeneration.from_pretrained(model_name)
 
+    # Load files
+    train_df = pd.read_json("./data/input/rouge/eLife_train.jsonl", lines=True)
+    eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True)
+
     # Create Datasets from pandas DataFrames
     train_dataset = Dataset.from_pandas(train_df).map(
         lambda x: process_data_to_model_inputs(x, tokenizer),
