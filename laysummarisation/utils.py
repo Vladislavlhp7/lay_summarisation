@@ -1,12 +1,13 @@
 import os
 import re
-from time import sleep
 from random import seed
+from time import sleep
 from typing import Dict, List, Tuple
-from transformers import pipeline
+
 import evaluate
 import numpy as np
 import pandas as pd
+
 # import spacy
 import torch
 from datasets import Dataset, DatasetDict
@@ -323,6 +324,8 @@ def compute_metrics(pred, tokenizer, batched=True) -> Dict[str, float]:
     if not batched:
         pred_ids = np.argmax(np.squeeze(pred_ids, axis=1), axis=-1)
         labels_ids = np.squeeze(labels_ids, axis=1)
+    else:
+        pred_ids = np.argmax(pred_ids[0], axis=1)
 
     # Load the Rouge metric from the datasets library
     # rouge = evaluate.load("rouge")
@@ -331,7 +334,7 @@ def compute_metrics(pred, tokenizer, batched=True) -> Dict[str, float]:
 
     # Decode the predicted and label IDs to strings, skipping special tokens
     pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
-    # labels_ids[labels_ids == -100] = tokenizer.pad_token_id
+    labels_ids[labels_ids == -100] = tokenizer.pad_token_id
     label_str = tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
 
     # print(f"{pred_str.shape=}")
@@ -545,15 +548,20 @@ def compute_readability_metrics(summaries):
 def remove_full_stop_after_et_al(text: str) -> str:
     return re.sub(r"(et al) \. (?![A-Z][a-z])", r"\1", text)
 
+
 # TODO: load model in advance
-def RNPTC(d: str, model_name: str= 'bert-base-uncased'):
-    model = pipeline('fill-mask', model=model_name)
+def RNPTC(d: str, model_name: str = "bert-base-uncased"):
+    model = pipeline("fill-mask", model=model_name)
     nlp = spacy.load("en_core_web_sm")
     doc_pipeline = nlp(d)
     # extract all noun phrases in summary
     noun_phrases = [chunk.text for chunk in doc_pipeline.noun_chunks]
     # remove phrases that only consist of stop words
-    noun_phrases = [phrase for phrase in noun_phrases if not all(token.is_stop for token in nlp(phrase))]
+    noun_phrases = [
+        phrase
+        for phrase in noun_phrases
+        if not all(token.is_stop for token in nlp(phrase))
+    ]
     noun_phrases_prob = []
     for noun_phrase in noun_phrases:
         d_ = d
@@ -563,8 +571,7 @@ def RNPTC(d: str, model_name: str= 'bert-base-uncased'):
         output = model(d_)
         for score_wrapper in output:
             token_score = score_wrapper[0]
-            p.append(token_score['score'])
-
+            p.append(token_score["score"])
 
 
 def main():

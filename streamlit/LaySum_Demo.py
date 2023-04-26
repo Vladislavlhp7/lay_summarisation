@@ -8,19 +8,39 @@ Hint: Check how you connect a port to CSF such as for Jupyter.
 Now check if you can do the same for Streamlit.
 """
 
+import pandas as pd
 import torch
 from rouge_score import rouge_scorer
 
 import streamlit as st
+from laysummarisation.inference.clinical_longformer import longformer_summary
 from laysummarisation.inference.extractor_model import perform_inference
 from laysummarisation.inference.gpt2 import gpt_summary
+from laysummarisation.model.clinical_longformer import load_longformer_model
 from laysummarisation.model.extractor_model import load_extractor_model
 from laysummarisation.model.gpt2 import load_gpt_model
 from laysummarisation.process.greedy_rouge import process_entry
-from laysummarisation.utils import (compute_readability_metrics,
-                                    load_jsonl_pandas, set_seed)
+from laysummarisation.utils import (
+    compute_readability_metrics_str,
+    load_jsonl_pandas,
+    set_seed,
+)
 
 # sys.path.append("../laysummarisation")
+st.markdown(
+    """
+    <style>
+    .stTextArea [data-baseweb=base-input] {
+        -webkit-text-fill-color: black;
+    }
+
+    .stTextArea [data-baseweb=base-input] [disabled=""]{
+        -webkit-text-fill-color: black;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 st.title("Abstractive Biomedical Lay Summarisation")
@@ -36,7 +56,7 @@ if st.checkbox("Show settings"):
 
 # TODO: Add a dropdown to select the dataset to use
 
-datasets = ["eLife", "PLOS"]
+datasets = ["PLOS", "eLife"]
 corpus = st.selectbox("Select a corpus for the demo:", datasets)
 
 st.write(f"Corpus: {corpus}")
@@ -137,23 +157,25 @@ def load_gpt():
     return load_gpt_model("./weights/gpt2/", device)
 
 
+st.subheader("Summarisation: GPT2")
 gpt_model, gpt_tokenizer = load_gpt()
 
 
 @st.cache_data
-def gpt_summarise():
+def gpt_summarise(article):
     return gpt_summary(
-        article=processed,
+        article=article,
         model=gpt_model,
         tokenizer=gpt_tokenizer,
-        max_length=1024,
-    )
+        max_length=507,
+    ).split(" TL;DR: ")[1]
 
 
-gpt_final = gpt_summarise()
+gpt_final = gpt_summarise(processed)
 
-st.subheader("Summarisation: GPT2")
-if st.checkbox("Show summarisation"):
+if st.checkbox("Show summarisation GPT2"):
+    if st.button("Refresh GPT"):
+        gpt_final = gpt_summarise(processed)
     st.text_area(
         f"Summarisation ({len(gpt_final)} chars)",
         gpt_final,
@@ -170,56 +192,89 @@ def load_longformer():
     return load_longformer_model("./weights/longformer/", device)
 
 
+st.subheader("Summarisation: Clinical Longformer")
 longformer_model, longformer_tokenizer = load_longformer()
 
 
 @st.cache_data
-def longformer_summarise():
+def longformer_summarise(article):
     return longformer_summary(
-        article=processed,
+        article={"article": article},
         model=longformer_model,
         tokenizer=longformer_tokenizer,
-        max_length=1024,
-    )
+        max_length=512,
+    )["summary"][0]
 
 
-longformer_final = longformer_summarise()
+longformer_final = longformer_summarise(processed)
 
-st.subheader("Summarisation: Clinical Longformer")
-if st.checkbox("Show summarisation"):
+if st.checkbox("Show summarisation Longformer"):
+    if st.button("Refresh LF"):
+        longformer_final = longformer_summarise(processed)
     st.text_area(
-        f"Summarisation ({len(gpt_final)} chars)",
+        f"Summarisation ({len(longformer_final)} chars)",
         longformer_final,
         height=150,
         disabled=True,
     )
 
 
-@st.cach_data
 def compute_metrics():
-    return compute_readability_metrics(
-        [datapoint["lay_summary"], gpt_final, longformer_final]
-    )
+    return [
+        compute_readability_metrics_str(s)
+        if len(s.split(" ")) > 120
+        else {
+            "flesch_kincaid_reading_score": 0,
+            "ari_score": 0,
+            "gunning_fog_score": 0,
+        }
+        for s in [
+            datapoint["lay_summary"],
+            processed,
+            gpt_final,
+            longformer_final,
+        ]
+        # [datapoint["lay_summary"], gpt_final, longformer_final]
+    ]
 
 
 metrics = compute_metrics()
 
 st.subheader("Evaluation: Readability Metrics")
 if st.checkbox("Show metrics"):
-    st.write("Metrics (lay summary)")
-    metrics[0]
-    st.write("Metrics (GPT2)")
-    metrics[1]
-    st.write("Metrics (Longformer)")
-    metrics[2]
+    if len(gpt_final.split(" ")) < 120:
+        st.warning(
+            "GPT2 summary is too short to compute metrics, setting values to zero."
+        )
+    if len(longformer_final.split(" ")) < 120:
+        st.warning(
+            "Longformer summary is too short to compute metrics, setting values to zero."
+        )
+
+    st.table(
+        pd.DataFrame(
+            metrics, index=["Lay Summary", "Extractive", "GPT2", "Longformer"]
+        )
+    )
+    st.write("flesch_kincaid_reading_score: higher is better")
+    st.write("ari_score: lower is better")
+    st.write("gunning_fog_score: lower is better")
 
 rouge = rouge_scorer.RougeScorer(["rouge2", "rouge1", "rougeL"])
 
 # Rouge metric, comparison to model lay sum
 st.subheader("Evaluation: Rouge Metrics")
-st.write("Rouge metrics (GPT2)")
-rouge.score(datapoint["lay_summary"], gpt_final)
-
-
-st.write("Rouge metrics (Longformer)")
-rouge.score(datapoint["lay_summary"], longformer_final)
+if st.checkbox("Show rouge metrics"):
+    st.table(
+        pd.DataFrame(
+            [
+                [
+                    rouge.score(datapoint["lay_summary"], p)[r].fmeasure
+                    for r in ["rouge1", "rouge2", "rougeL"]
+                ]
+                for p in [processed, gpt_final, longformer_final]
+            ],
+            index=["Extractive", "GPT2", "Longformer"],
+            columns=["rouge1", "rouge2", "rougeL"],
+        )
+    )

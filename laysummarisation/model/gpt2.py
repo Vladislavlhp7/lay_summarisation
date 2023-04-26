@@ -84,18 +84,34 @@ def generate_summary(model, tokenizer, article: str, max_length: int = 512):
     """
     model.eval()
     with torch.no_grad():
-        input_ids = tokenizer.encode(
-            "Simplify: " + article,
+        input_ids = tokenizer(
+            article,
             return_tensors="pt",
             max_length=max_length,
             truncation=True,
             padding="max_length",
         )
 
-        input_ids = input_ids.to(model.device)
+        tldr = tokenizer(" TL;DR: ", return_tensors="pt")
 
+        input_ids["input_ids"] = torch.cat(
+            [input_ids["input_ids"], tldr["input_ids"]], dim=1
+        )
+        input_ids["attention_mask"] = torch.cat(
+            [input_ids["attention_mask"], tldr["attention_mask"]], dim=1
+        )
+
+        input_ids = input_ids.to(model.device)
         output = model.generate(
-            input_ids, max_length=max_length, num_return_sequences=1
+            **input_ids,
+            max_length=max_length * 2,
+            num_return_sequences=1,
+            top_k=100,
+            top_p=0.5,
+            no_repeat_ngram_size=2,
+            num_beams=5,
+            early_stopping=True,
+            temperature=0.5,
         )
 
     summary = tokenizer.decode(output[0], skip_special_tokens=True)
@@ -115,13 +131,10 @@ def load_gpt_model(model_path: str, device: str = "cpu"):
         tokenizer (BertTokenizerFast): The tokenizer.
     """
     # Load model
-    model_dir = os.path.dirname(model_path)
-    output_model_file = f"{model_dir}/pytorch_model.bin"
-    output_config_file = f"{model_dir}/config.json"
-    config = GPT2Config.from_json_file(output_config_file)
-    model = GPT2LMHeadModel(config)
+    output_model_file = os.path.join(model_path, "pytorch_model.bin")
+    model = GPT2LMHeadModel.from_pretrained("gpt2")
     model.to(device)
-    model.load_state_dict(torch.load(output_model_file, map_location=device))
+    # model.load_state_dict(torch.load(output_model_file, map_location=device))
 
     # Load Tokenizer
     try:
@@ -129,6 +142,7 @@ def load_gpt_model(model_path: str, device: str = "cpu"):
     except OSError:
         model_name = "gpt2"
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+    tokenizer.pad_token = tokenizer.eos_token
     return model, tokenizer
 
 

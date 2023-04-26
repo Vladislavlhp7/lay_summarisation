@@ -2,22 +2,31 @@ import os
 
 import torch
 from datasets import Dataset
-from transformers import (HfArgumentParser, LEDConfig,
-                          LEDForConditionalGeneration, LEDTokenizer,
-                          Seq2SeqTrainer, Seq2SeqTrainingArguments)
+from transformers import (
+    HfArgumentParser,
+    LEDConfig,
+    LEDForConditionalGeneration,
+    LEDTokenizer,
+    Seq2SeqTrainer,
+    Seq2SeqTrainingArguments,
+)
 
 from laysummarisation.config import LFParserConfig
-from laysummarisation.utils import (compute_metrics, load_jsonl_pandas,
-                                    process_data_to_model_inputs, set_seed)
+from laysummarisation.utils import (
+    compute_metrics,
+    load_jsonl_pandas,
+    process_data_to_model_inputs,
+    set_seed,
+)
 
 
-def generate_summary(model, tokenizer, article: str, max_length: int = 512):
+def generate_summary(model, tokenizer, batch, max_length: int = 512):
     """
     Generate summary from the Clinical Longformer model
     Args:
         model: The model.
         tokenizer: The tokenizer.
-        article: The article to summarise.
+        batch: The article batch to summarise.
         max_length: The maximum number of tokens to generate.
         args: The input arguments to the Trainer.
     Returns:
@@ -25,22 +34,29 @@ def generate_summary(model, tokenizer, article: str, max_length: int = 512):
     """
     model.eval()
     with torch.no_grad():
-        input_ids = tokenizer.encode(
-            article,
+        inputs_dict = tokenizer(
+            batch["article"],
             return_tensors="pt",
             max_length=max_length,
             truncation=True,
             padding="max_length",
         )
 
-        input_ids = input_ids.to(model.device)
+        input_ids = inputs_dict["input_ids"].to(model.device)
+        attention_mask = inputs_dict["attention_mask"].to(model.device)
+        global_attention_mask = torch.zeros_like(attention_mask)
+        global_attention_mask[:, 0] = 1
 
         output = model.generate(
-            input_ids, max_length=max_length, num_return_sequences=1
+            input_ids,
+            attention_mask=attention_mask,
+            global_attention_mask=global_attention_mask,
+            max_length=max_length,
+            num_return_sequences=1,
         )
 
-    summary = tokenizer.decode(output[0], skip_special_tokens=True)
-    return summary
+    batch["summary"] = tokenizer.batch_decode(output, skip_special_tokens=True)
+    return batch
 
 
 def load_longformer_model(model_path: str, device: str = "cpu"):
@@ -56,11 +72,12 @@ def load_longformer_model(model_path: str, device: str = "cpu"):
         tokenizer (BertTokenizerFast): The tokenizer.
     """
     # Load model
-    model_dir = os.path.dirname(model_path)
-    output_model_file = f"{model_dir}/pytorch_model.bin"
-    output_config_file = f"{model_dir}/config.json"
+    output_model_file = os.path.join(model_path, "pytorch_model.bin")
+    # output_model_file = f"{model_dir}/pytorch_model.bin"
+    print(output_model_file)
+    output_config_file = os.path.join(model_path, "config.json")
     config = LEDConfig.from_json_file(output_config_file)
-    model = LEDForConditionalGeneration.from_pretrained(config)
+    model = LEDForConditionalGeneration(config)
     model.to(device)
     model.load_state_dict(torch.load(output_model_file, map_location=device))
 
