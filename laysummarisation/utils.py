@@ -1,5 +1,6 @@
 import os
 import re
+from time import sleep
 from random import seed
 from typing import Dict, List, Tuple
 
@@ -314,6 +315,7 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
         A dictionary with Rouge2 Precision, Recall, and F-measure.
     """
     print(pred)
+    sleep(3)
     # Extract the label IDs and predicted IDs from the input NamedTuple
     labels_ids = pred.label_ids
     pred_ids = pred.predictions
