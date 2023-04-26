@@ -132,6 +132,7 @@ def main(conf: Arguments):
         overwrite_output_dir=True,
         num_train_epochs=conf.epochs,
         per_device_train_batch_size=conf.batch_size,
+        per_device_eval_batch_size=conf.batch_size,
         save_steps=conf.save_steps,
         save_total_limit=2,
         evaluation_strategy="epoch",
