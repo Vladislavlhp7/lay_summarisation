@@ -1,5 +1,6 @@
 import pandas as pd
 import torch
+from datasets import Dataset
 from transformers import (DataCollatorForSeq2Seq, Seq2SeqTrainer,
                           Seq2SeqTrainingArguments, T5ForConditionalGeneration,
                           T5Tokenizer, TextDataset)
@@ -66,11 +67,15 @@ def main():
     tokenizer = T5Tokenizer.from_pretrained(model_name)
     model = T5ForConditionalGeneration.from_pretrained(model_name)
 
-    train_dataset = TextDataset(
-        tokenizer=tokenizer,
-        file_path="./data/input/rouge/eLife_train.jsonl",
-        column_names=["article", "lay_summary"],
-        block_size=1024,
+    # Load files
+    train_df = pd.read_json("./data/input/rouge/eLife_train.jsonl", lines=True)
+    eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True)
+
+    # Create Datasets from pandas DataFrames
+    train_dataset = Dataset.from_pandas(train_df).map(
+        lambda x: process_data_to_model_inputs(x, tokenizer),
+        batched=True,
+        remove_columns=["article", "lay_summary"],
     )
     eval_dataset = TextDataset(
         tokenizer=tokenizer,
