@@ -67,6 +67,9 @@ GPT2 Model (based on <https://huggingface.co/gpt2>):
 Clinical Longformer model (based on <https://huggingface.co/yikuan8/Clinical-Longformer>):
 <https://drive.google.com/drive/folders/1QtFVqKHtmj_T64Vanyyrm5mnigl7_TJ4?usp=sharing>
 
+ClinicalT5 model (based on <https://physionet.org/content/clinical-t5/1.0.0/>):
+<https://livemanchesterac-my.sharepoint.com/:f:/g/personal/ahmed_soliman-2_student_manchester_ac_uk/EjcG0NcNbpRKoCvUUzzRCrwBKNE4RN-IQfh_ZUiVB3Tkvg?e=SOGPs1>
+
 ## Dataset
 
 The datasets used was provided as part of the BioLaySum 2023 Challenge. The two datasets are academic articles from PLOS and eLife.
