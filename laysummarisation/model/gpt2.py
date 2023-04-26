@@ -77,7 +77,7 @@ class Arguments:
 
 
 def build_inputs(
-    batch, tokenizer: GPT2Tokenizer, max_length: int = 1024
+    batch, tokenizer: GPT2Tokenizer, max_length: int = 512
 ) -> dict:
     batch["input_ids"] = tokenizer.encode(
         batch["article"],
@@ -132,23 +132,30 @@ def main(conf: Arguments):
         overwrite_output_dir=True,
         num_train_epochs=conf.epochs,
         per_device_train_batch_size=conf.batch_size,
+        per_device_eval_batch_size=conf.batch_size,
         save_steps=conf.save_steps,
         save_total_limit=2,
         evaluation_strategy="epoch",
         report_to=["wandb"],
         learning_rate=conf.lr,
+        fp16=True,
+        fp16_full_eval=True,
+        # gradient_accumulation_steps=2,
+        eval_accumulation_steps=1,
     )
 
     train_df = pd.read_json(conf.ftrain, lines=True)
     eval_df = pd.read_json(conf.fvalid, lines=True)
+    # take only the first 50% of the data
+    eval_df = eval_df.iloc[: int(len(eval_df) / 3)]
 
     train_dataset = Dataset.from_pandas(train_df).map(
-        lambda x: build_inputs(x, tokenizer),
+        lambda x: build_inputs(x, tokenizer, max_length=conf.max_encode),
         remove_columns=["article", "lay_summary"],
     )
 
     eval_dataset = Dataset.from_pandas(eval_df).map(
-        lambda x: build_inputs(x, tokenizer),
+        lambda x: build_inputs(x, tokenizer, max_length=conf.max_encode),
         remove_columns=["article", "lay_summary"],
     )
 

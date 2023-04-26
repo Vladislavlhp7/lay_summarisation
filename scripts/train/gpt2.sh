@@ -14,7 +14,7 @@ python -m laysummarisation.model.gpt2 \
 	--model_checkpoint ${MODEL} \
 	--device "cuda" \
 	--temperature 0.7 \
-	--max_encode 1024 \
+	--max_encode 512 \
 	--lr 5e-5 \
 	--batch_size 1 \
 	--epochs 3 \
