@@ -319,7 +319,7 @@ def compute_metrics(pred, tokenizer, batched=True) -> Dict[str, float]:
     labels_ids = pred.label_ids
     pred_ids = pred.predictions
 
-    if batched:
+    if not batched:
         pred_ids = np.argmax(np.squeeze(pred_ids, axis=1), axis=-1)
         labels_ids = np.squeeze(labels_ids, axis=1)
 
