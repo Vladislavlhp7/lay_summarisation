@@ -1,5 +1,6 @@
 import os
 import re
+from time import sleep
 from random import seed
 from typing import Dict, List, Tuple
 
