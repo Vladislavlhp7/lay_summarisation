@@ -1,7 +1,7 @@
 import torch
 from laysummarisation.utils import compute_metrics
 import wandb
-from datasets import load_dataset
+from datasets import Dataset
 import pandas as pd
 
 from transformers import (
@@ -10,24 +10,35 @@ from transformers import (
     TextDataset,
     DataCollatorForSeq2Seq,
     Seq2SeqTrainingArguments,
-    Seq2SeqTrainer
+    Seq2SeqTrainer,
 )
 
 
 def process_data_to_model_inputs(batch, tokenizer):
     """
     Preprocesses data into model inputs.
-    
+
     Args:
         batch: A dictionary containing 'article' and 'lay_summary'.
         tokenizer: The tokenizer.
-    
+
     Returns:
         A dictionary containing 'input_ids', 'attention_mask', and 'labels'.
     """
-    inputs = tokenizer(batch['article'], padding='max_length', truncation=True, max_length=512, return_tensors="pt")
-    outputs = tokenizer(batch['lay_summary'], padding='max_length', truncation=True, max_length=128,
-                        return_tensors="pt")
+    inputs = tokenizer(
+        batch["article"],
+        padding="max_length",
+        truncation=True,
+        max_length=512,
+        return_tensors="pt",
+    )
+    outputs = tokenizer(
+        batch["lay_summary"],
+        padding="max_length",
+        truncation=True,
+        max_length=128,
+        return_tensors="pt",
+    )
 
     inputs["input_ids"] = inputs["input_ids"].squeeze()
     inputs["attention_mask"] = inputs["attention_mask"].squeeze()
@@ -41,6 +52,7 @@ def process_data_to_model_inputs(batch, tokenizer):
         "attention_mask": inputs["attention_mask"],
         "labels": labels,
     }
+
 
 def main():
     print("CUDA available:" + str(torch.cuda.is_available()))
@@ -60,13 +72,18 @@ def main():
     tokenizer = T5Tokenizer.from_pretrained(model_name)
     model = T5ForConditionalGeneration.from_pretrained(model_name)
 
-    # Load the dataset
-    dataset = load_dataset("json", data_files={"train": "./data/input/rouge/eLife_train.jsonl", "eval": "./data/input/rouge/eLife_val.jsonl"}, split=["train", "eval"], lines=True)
+    # Create Datasets from pandas DataFrames
+    train_dataset = Dataset.from_pandas(train_df).map(
+        lambda x: process_data_to_model_inputs(x, tokenizer),
+        batched=True,
+        remove_columns=["article", "lay_summary"],
+    )
 
-    # Tokenize the dataset
-    train_dataset = dataset["train"].map(lambda x: process_data_to_model_inputs(x, tokenizer), batched=True, remove_columns=["article", "lay_summary"])
-    eval_dataset = dataset["eval"].map(lambda x: process_data_to_model_inputs(x, tokenizer), batched=True, remove_columns=["article", "lay_summary"])
-
+    eval_dataset = Dataset.from_pandas(eval_df).map(
+        lambda x: process_data_to_model_inputs(x, tokenizer),
+        batched=True,
+        remove_columns=["article", "lay_summary"],
+    )
 
     training_args = Seq2SeqTrainingArguments(
         output_dir="./results",
