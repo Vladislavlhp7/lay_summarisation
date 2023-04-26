@@ -2,22 +2,75 @@ import os
 
 import torch
 from datasets import Dataset
-from transformers import (
-    HfArgumentParser,
-    LEDConfig,
-    LEDForConditionalGeneration,
-    LEDTokenizer,
-    Seq2SeqTrainer,
-    Seq2SeqTrainingArguments,
-)
+from transformers import (HfArgumentParser, LEDConfig,
+                          LEDForConditionalGeneration, LEDTokenizer,
+                          Seq2SeqTrainer, Seq2SeqTrainingArguments)
 
 from laysummarisation.config import LFParserConfig
-from laysummarisation.utils import (
-    compute_metrics,
-    load_jsonl_pandas,
-    process_data_to_model_inputs,
-    set_seed,
-)
+from laysummarisation.utils import (compute_metrics, load_jsonl_pandas,
+                                    process_data_to_model_inputs, set_seed)
+
+
+def generate_summary(model, tokenizer, article: str, max_length: int = 512):
+    """
+    Generate summary from the Clinical Longformer model
+    Args:
+        model: The model.
+        tokenizer: The tokenizer.
+        article: The article to summarise.
+        max_length: The maximum number of tokens to generate.
+        args: The input arguments to the Trainer.
+    Returns:
+        summary (str): The generated summary.
+    """
+    model.eval()
+    with torch.no_grad():
+        input_ids = tokenizer.encode(
+            article,
+            return_tensors="pt",
+            max_length=max_length,
+            truncation=True,
+            padding="max_length",
+        )
+
+        input_ids = input_ids.to(model.device)
+
+        output = model.generate(
+            input_ids, max_length=max_length, num_return_sequences=1
+        )
+
+    summary = tokenizer.decode(output[0], skip_special_tokens=True)
+    return summary
+
+
+def load_longformer_model(model_path: str, device: str = "cpu"):
+    """
+    Load the extractor model
+
+    Args:
+        model_path (str): The path to the model.
+        device (str): The device to use.
+
+    Returns:
+        model (BertForSequenceClassification): The model.
+        tokenizer (BertTokenizerFast): The tokenizer.
+    """
+    # Load model
+    model_dir = os.path.dirname(model_path)
+    output_model_file = f"{model_dir}/pytorch_model.bin"
+    output_config_file = f"{model_dir}/config.json"
+    config = LEDConfig.from_json_file(output_config_file)
+    model = LEDForConditionalGeneration.from_pretrained(config)
+    model.to(device)
+    model.load_state_dict(torch.load(output_model_file, map_location=device))
+
+    # Load Tokenizer
+    try:
+        tokenizer = LEDTokenizer.from_pretrained(model_path)
+    except OSError:
+        model_name = "yikuan8/Clinical-Longformer"
+        tokenizer = LEDTokenizer.from_pretrained(model_name)
+    return model, tokenizer
 
 
 def train(conf: LFParserConfig):

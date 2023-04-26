@@ -159,9 +159,38 @@ if st.checkbox("Show summarisation"):
         disabled=True,
     )
 
-# Button to load the model so it doesn't load on every page load
+
+# Clinical Longformer
 # Model input
 # Model output
+@st.cache_resource
+def load_longformer():
+    return load_longformer_model("./weights/longformer/", device)
+
+
+longformer_model, longformer_tokenizer = load_longformer()
+
+
+@st.cache_data
+def longformer_summarise():
+    return longformer_summary(
+        article=processed,
+        model=longformer_model,
+        tokenizer=longformer_tokenizer,
+        max_length=1024,
+    )
+
+
+longformer_final = longformer_summarise()
+
+st.subheader("Summarisation: Clinical Longformer")
+if st.checkbox("Show summarisation"):
+    st.text_area(
+        f"Summarisation ({len(gpt_final)} chars)",
+        longformer_final,
+        height=150,
+        disabled=True,
+    )
 
 
 # Rouge metric, comparison to model lay sum
