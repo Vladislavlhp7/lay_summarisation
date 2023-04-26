@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SEED_DIR=./data/input/rouge
-MODEL="yikuan8/Clinical-Longformer"
+MODEL="gpt2"
 CORPUS="eLife"
 SEED=42
 
@@ -17,5 +17,5 @@ python -m laysummarisation.model.gpt2 \
 	--max_encode 1024 \
 	--lr 5e-5 \
 	--batch_size 1 \
-	--epochs 5 \
+	--epochs 3 \
 	--save_steps 2000

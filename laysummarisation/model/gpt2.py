@@ -15,7 +15,10 @@ from transformers import (
     TrainingArguments,
 )
 
+import wandb
 from laysummarisation.utils import compute_metrics
+
+wandb.init(mode="disabled")
 
 gc.collect()
 
@@ -79,41 +82,24 @@ class Arguments:
 
 
 def build_inputs(
-    text: str, summary: str, tokenizer: GPT2Tokenizer, max_length: int = 1024
+    batch, tokenizer: GPT2Tokenizer, max_length: int = 1024
 ) -> dict:
-    input_ids = tokenizer.encode(
-        text,
+    batch["input_ids"] = tokenizer.encode(
+        batch["article"],
         return_tensors="pt",
         max_length=max_length,
         truncation=True,
         padding="max_length",
     )
-    target_ids = tokenizer.encode(
-        summary,
+    batch["labels"] = tokenizer.encode(
+        batch["lay_summary"],
         return_tensors="pt",
         max_length=max_length,
         truncation=True,
         padding="max_length",
     )
 
-    return {"input_ids": input_ids, "labels": target_ids}
-
-
-# class LaySummarizationDataset(Dataset):
-#     def __init__(self, data, tokenizer):
-#         self.data = data
-#         self.tokenizer = tokenizer
-#
-#     def __len__(self):
-#         return len(self.data)
-#
-#     def __getitem__(self, idx):
-#         item = self.data[idx]
-#         return {
-#             "input_ids": item["input_ids"].squeeze(),
-#             "labels": item["labels"].squeeze(),
-#         }
-#
+    return batch
 
 
 def main(conf: Arguments):
@@ -125,8 +111,7 @@ def main(conf: Arguments):
     # # Load files
     # print("Loading files...")
 
-    model_name = "gpt2"
-    config = GPT2Config.from_pretrained(model_name)
+    config = GPT2Config.from_pretrained(conf.model_checkpoint)
     config.task_specific_params = {
         "text-generation": {
             "do_sample": True,
@@ -134,9 +119,16 @@ def main(conf: Arguments):
             "temperature": conf.temperature,
         }
     }
-    tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-    tokenizer.pad_token = tokenizer.eos_token
-    model = GPT2LMHeadModel.from_pretrained(model_name, config=config)
+    tokenizer = GPT2Tokenizer.from_pretrained(conf.model_checkpoint)
+
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        config.pad_token_id = config.eos_token_id
+
+    model = GPT2LMHeadModel.from_pretrained(
+        conf.model_checkpoint,
+        config=config,
+    )
 
     model.to(device)
 
@@ -151,24 +143,16 @@ def main(conf: Arguments):
         learning_rate=conf.lr,
     )
 
-    train_df = pd.read_json(
-        "./data/input/rouge/eLife_train.jsonl", lines=True
-    ).head(10)
-    eval_df = pd.read_json(
-        "./data/input/rouge/eLife_val.jsonl", lines=True
-    ).head(10)
+    train_df = pd.read_json(conf.ftrain, lines=True)
+    eval_df = pd.read_json(conf.fvalid, lines=True)
 
     train_dataset = Dataset.from_pandas(train_df).map(
-        lambda x: build_inputs(x["article"], x["lay_summary"], tokenizer),
-        batched=True,
-        batch_size=conf.batch_size,
+        lambda x: build_inputs(x, tokenizer),
         remove_columns=["article", "lay_summary"],
     )
 
     eval_dataset = Dataset.from_pandas(eval_df).map(
-        lambda x: build_inputs(x["article"], x["lay_summary"], tokenizer),
-        batched=True,
-        batch_size=conf.batch_size,
+        lambda x: build_inputs(x, tokenizer),
         remove_columns=["article", "lay_summary"],
     )
 
@@ -188,24 +172,6 @@ def main(conf: Arguments):
         ],
     )
 
-    print(train_dataset[0])
-    print(eval_dataset[0])
-    # Create the train and evaluation datasets
-    # train_dataset = LaySummarizationDataset(
-    #     [
-    #         build_inputs(row["article"], row["lay_summary"], tokenizer)
-    #         for _, row in train_df.iterrows()
-    #     ],
-    #     tokenizer,
-    # )
-    # eval_dataset = LaySummarizationDataset(
-    #     [
-    #         build_inputs(row["article"], row["lay_summary"], tokenizer)
-    #         for _, row in eval_df.iterrows()
-    #     ],
-    #     tokenizer,
-    # )
-
     # Initialize the trainer with the model, training arguments, and datasets
     trainer = Trainer(
         model=model,
@@ -213,7 +179,7 @@ def main(conf: Arguments):
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         tokenizer=tokenizer,
-        compute_metrics=lambda x: compute_metrics(x, tokenizer),
+        compute_metrics=lambda x: compute_metrics(x, tokenizer, batched=True),
     )
 
     # Train the model

@@ -300,7 +300,7 @@ def set_seed(seed_v: int = 42) -> None:
     print(f"Random seed set as {seed_v}")
 
 
-def compute_metrics(pred, tokenizer) -> Dict[str, float]:
+def compute_metrics(pred, tokenizer, batched=True) -> Dict[str, float]:
     """
     Compute Rouge2 Precision, Recall, and F-measure for given predictions and labels.
 
@@ -313,32 +313,29 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
     Returns:
         A dictionary with Rouge2 Precision, Recall, and F-measure.
     """
-    print(pred)
+
     # Extract the label IDs and predicted IDs from the input NamedTuple
     labels_ids = pred.label_ids
     pred_ids = pred.predictions
 
+    if batched:
+        pred_ids = np.argmax(np.squeeze(pred_ids, axis=1), axis=-1)
+        labels_ids = np.squeeze(labels_ids, axis=1)
 
     # Load the Rouge metric from the datasets library
     # rouge = evaluate.load("rouge")
 
     rouge = rouge_scorer.RougeScorer(["rouge2"])
 
-    print()
-    print()
-    print(pred_ids)
     # Decode the predicted and label IDs to strings, skipping special tokens
     pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
-    labels_ids[labels_ids == -100] = tokenizer.pad_token_id
+    # labels_ids[labels_ids == -100] = tokenizer.pad_token_id
     label_str = tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
 
     # print(f"{pred_str.shape=}")
     # print(f"{label_str.shape=}")
 
     # Compute Rouge2 scores for the predictions and labels
-    print("pred_str", pred_str)
-    print("label_str", label_str)
-
     rouge_output = [
         rouge.score(l, p)["rouge2"] for l, p in zip(label_str, pred_str)
     ]
