@@ -6,32 +6,6 @@ Project as part of COMP34812: Natural Language Understanding
 
 General Theme: Attempt to find a way to fit the necessary contextual information into the limit context size for the T5 model.
 
-## General
-
-- Multi-gpu training
-- Sharing the tuned models
-- Evaluation
-- Code for training and evaluation
-- Baseline???
-- Metrics (is rouge enough for lay sum?)
-- tuning on elife + on plos or separately?
-- Optimum parameters for LexRank
-  - Number of sentences
-  - Have to consider max token length of 4096 (input length + max output length = 4096)
-  - How will it impact traning time?
-
-## Vlad
-
--
-
-## Ahmed
-
--
-
-## Marc
-
--
-
 ## Installation
 
 Preferably use poetry. See install info [here](https://python-poetry.org/docs/).
@@ -60,21 +34,15 @@ module load tools/env/proxy2
 
 Using the scripts in the `scripts` folder, you can automatically download and extract the data.
 
-Run the following command to setup both data and model weights:
+Run the following command to setup both data:
 
 ```shell
-./scripts/setup_all.sh
+./scripts/setup_data.sh
 ```
-
-Or individually using `./scripts/setup_data.sh` and `./scripts/setup_weights.sh`.
 
 If downloading the data does not work, download it manually and extract the contents to `data/orig`
 
 <https://drive.google.com/uc?id=1FFfa4fHlhEAyJZIM2Ue-AR6Noe9gOJOF&export=download>
-
-For the weights, clone the following repo into the `weights` folder:
-
-<https://huggingface.co/yikuan8/Clinical-Longformer>
 
 ## Running the code
 
@@ -92,13 +60,31 @@ Or run individually with `./scripts/data/elife.sh` and `./scripts/data/plos.sh`.
 
 Look at the `jobs` folder.
 
-## Questions
+## Models
 
-How to use poetry on CSF?
+Extractor model (based on <https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT>):
+<https://drive.google.com/drive/folders/1w-LhpA1ek5V10wUImU0BiRhjNOjihZiQ?usp=sharing>
 
-How to setup pytorch for GPU on CSF?
+GPT2 Model (based on <https://huggingface.co/gpt2>):
+<https://livemanchesterac-my.sharepoint.com/:f:/g/personal/ahmed_soliman-2_student_manchester_ac_uk/EjcG0NcNbpRKoCvUUzzRCrwBKNE4RN-IQfh_ZUiVB3Tkvg?e=SOGPs1>
 
-Should we use MLFlow?
+Clinical Longformer model (based on <https://huggingface.co/yikuan8/Clinical-Longformer>):
+<https://drive.google.com/drive/folders/1QtFVqKHtmj_T64Vanyyrm5mnigl7_TJ4?usp=sharing>
+
+## Dataset
+
+The datasets used was provided as part of the BioLaySum 2023 Challenge. The two datasets are academic articles from PLOS and eLife.
+
+The data can be accessed at the following link:
+<https://biolaysumm.org/>
+
+(If that link doesn't work check the google drive link above)
+
+Data source:
+
+[1] Tomas Goldsack, Zhihao Zhang, Chenghua Lin, Carolina Scarton. Making Science Simple: Corpora for the Lay Summarisation of Scientific Literature. Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing (EMNLP 2022), Abu Dhabi. url
+
+[2] Zheheng Luo, Qianqian Xie, Sophia Ananiadou. Readability Controllable Biomedical Document Summarization. Findings of the 2022 Conference on Empirical Methods in Natural Language Processing (EMNLP 2022 Findings), Abu Dhabi. url
 
 ## Links
 
