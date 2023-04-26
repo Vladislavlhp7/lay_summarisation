@@ -140,10 +140,12 @@ def main(conf: Arguments):
         learning_rate=conf.lr,
         fp16=True,
         fp16_full_eval=True,
+        # gradient_accumulation_steps=2,
+        eval_accumulation_steps=1,
     )
 
-    train_df = pd.read_json(conf.ftrain, lines=True)
-    eval_df = pd.read_json(conf.fvalid, lines=True)
+    train_df = pd.read_json(conf.ftrain, lines=True).head(100)
+    eval_df = pd.read_json(conf.fvalid, lines=True).head(100)
 
     train_dataset = Dataset.from_pandas(train_df).map(
         lambda x: build_inputs(x, tokenizer, max_length=conf.max_encode),
