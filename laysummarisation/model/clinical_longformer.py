@@ -32,11 +32,13 @@ def train(conf: LFParserConfig):
     os.environ["WANDB_LOG_MODEL"] = "true"
 
     # Naming and paths
-    model_checkpoint = "yikuan8/Clinical-Longformer"
-    model_name = model_checkpoint.split("/")[-1]
+    model_name = conf.model.split("/")[-1]
+
+    if conf.checkpoint is not None:
+        conf.model = conf.checkpoint
 
     # TODO: Add the config to the model
-    lf_config = LEDConfig.from_pretrained(model_checkpoint)
+    lf_config = LEDConfig.from_pretrained(conf.model)
 
     # Set Generation hyperparameters
 
@@ -50,9 +52,9 @@ def train(conf: LFParserConfig):
     lf_config.early_stopping = conf.early_stopping
     lf_config.no_repeat_ngram_size = 3
 
-    tokenizer = LEDTokenizer.from_pretrained(model_checkpoint)
+    tokenizer = LEDTokenizer.from_pretrained(conf.model)
     model = LEDForConditionalGeneration.from_pretrained(
-        model_checkpoint, config=lf_config
+        conf.model, config=lf_config
     )
 
     assert isinstance(model, LEDForConditionalGeneration)
@@ -63,9 +65,11 @@ def train(conf: LFParserConfig):
 
     args = Seq2SeqTrainingArguments(
         predict_with_generate=True,
-        output_dir=f"{conf.save_dir}/{conf.corpus}",
-        evaluation_strategy="epoch",
-        save_strategy="epoch",
+        output_dir=conf.save_dir,
+        evaluation_strategy=conf.eval_strategy,
+        logging_strategy=conf.logging_strategy,
+        seed=conf.seed,
+        save_strategy=conf.save_strategy,
         logging_steps=conf.logging_steps,
         warmup_steps=conf.warmup_steps,
         save_total_limit=2,
@@ -75,11 +79,11 @@ def train(conf: LFParserConfig):
         per_device_eval_batch_size=conf.batch_size,
         num_train_epochs=conf.epochs,
         weight_decay=conf.weight_decay,
-        run_name=model_name,
+        run_name=f"{model_name}_{conf.corpus}",
         report_to=["wandb"],
         eval_steps=conf.eval_steps,
-        fp16=True,
-        fp16_full_eval=True,
+        fp16=conf.fp16,
+        fp16_full_eval=conf.fp16_full_eval,
     )
 
     train_df = load_jsonl_pandas(conf.ftrain)
@@ -132,7 +136,7 @@ def train(conf: LFParserConfig):
         compute_metrics=lambda x: compute_metrics(x, tokenizer),
     )
 
-    trainer.train()
+    trainer.train(resume_from_checkpoint=conf.checkpoint is not None)
 
 
 def main(conf):

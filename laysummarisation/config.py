@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
-
-import torch
+from typing import Optional
 
 
 @dataclass
@@ -27,17 +26,17 @@ class LFParserConfig:
             "help": "The random seed for model and training initialization"
         },
     )
-    model_checkpoint: str = field(
+    model: str = field(
         default="yikuan8/Clinical-Longformer",
         metadata={"help": "The model checkpoint path or name."},
     )
-    device: str = field(
-        default="cuda" if torch.cuda.is_available() else "cpu",
-        metadata={"help": "The device to use for training"},
+    checkpoint: Optional[str] = field(
+        default=None,
+        metadata={"help": "The model checkpoint path or name."},
     )
-    attention_window: int = field(
-        default=512,
-        metadata={"help": "The attention window-size for Longformer"},
+    device: str = field(
+        default="cpu",
+        metadata={"help": "The device to use for training"},
     )
     max_encode: int = field(
         default=512,
@@ -50,6 +49,10 @@ class LFParserConfig:
     max_decode: int = field(
         default=1024,
         metadata={"help": "The max token length for the decoder"},
+    )
+    attention_window: int = field(
+        default=512,
+        metadata={"help": "The attention window-size for Longformer"},
     )
     nbeams: int = field(
         default=4,
@@ -79,21 +82,9 @@ class LFParserConfig:
         default=0.01,
         metadata={"help": "The weight decay for training"},
     )
-    save_steps: int = field(
-        default=1000,
-        metadata={"help": "The number of steps to save the model"},
-    )
-    eval_steps: int = field(
-        default=1000,
-        metadata={"help": "The number of steps to evaluate the model"},
-    )
     metric: str = field(
         default="rouge2_f",
         metadata={"help": "The metric to use for model selection"},
-    )
-    logging_steps: int = field(
-        default=250,
-        metadata={"help": "The number of steps to log the training"},
     )
     warmup_steps: int = field(
         default=1500,
@@ -102,4 +93,40 @@ class LFParserConfig:
     gradient_accum_steps: int = field(
         default=4,
         metadata={"help": "The number of steps for gradient accumulation"},
+    )
+    save_strategy: str = field(
+        default="steps",
+        metadata={"help": "The strategy to save the model"},
+    )
+    logging_strategy: str = field(
+        default="steps",
+        metadata={"help": "The strategy to log the training"},
+    )
+    eval_strategy: str = field(
+        default="steps",
+        metadata={"help": "The strategy to evaluate the model"},
+    )
+    save_steps: int = field(
+        default=1000,
+        metadata={"help": "The number of steps to save the model"},
+    )
+    eval_steps: int = field(
+        default=1000,
+        metadata={"help": "The number of steps to evaluate the model"},
+    )
+    logging_steps: int = field(
+        default=250,
+        metadata={"help": "The number of steps to log the training"},
+    )
+    load_best_model_at_end: bool = field(
+        default=True,
+        metadata={"help": "Whether to load the best model at the end"},
+    )
+    fp16: bool = field(
+        default=False,
+        metadata={"help": "Whether to use fp16 for training"},
+    )
+    fp16_full_eval: bool = field(
+        default=False,
+        metadata={"help": "Whether to use fp16 for evaluation"},
     )
