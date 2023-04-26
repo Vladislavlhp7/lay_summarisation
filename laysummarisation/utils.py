@@ -7,7 +7,7 @@ from transformers import pipeline
 import evaluate
 import numpy as np
 import pandas as pd
-import spacy
+# import spacy
 import torch
 from datasets import Dataset, DatasetDict
 from nltk import sent_tokenize

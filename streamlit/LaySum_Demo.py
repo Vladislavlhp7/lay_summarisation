@@ -9,6 +9,8 @@ Now check if you can do the same for Streamlit.
 """
 
 import streamlit as st
+from laysummarisation.inference.extractor_model import perform_inference
+from laysummarisation.model.extractor_model import load_extractor_model
 from laysummarisation.process.greedy_rouge import process_entry
 from laysummarisation.utils import load_jsonl_pandas, set_seed
 
@@ -36,7 +38,14 @@ st.write(f"Corpus: {corpus}")
 data_load_state = st.text("Loading data...")
 
 st.write("CHANGE THIS TO LOAD THE CORRECT DATASET (VAL)")
-df = load_jsonl_pandas(f"./data/orig/val/{corpus}_val.jsonl", nrows=10)
+
+
+@st.cache_data
+def load_dataset():
+    return load_jsonl_pandas(f"./data/orig/val/{corpus}_val.jsonl", nrows=10)
+
+
+df = load_dataset()
 
 data_load_state.text("Done!")
 
@@ -78,9 +87,22 @@ if st.checkbox("Show datapoint preview"):
 # Rouge Maximisation
 
 
+@st.cache_resource
+def load_extractor():
+    return load_extractor_model("./weights/Bio_ClinicalBERT_2e-05/")
+
+
+extractor_model, extractor_tokenizer = load_extractor()
+
+
 @st.cache_data
 def process(datapoint):
-    return process_entry(datapoint, 10)
+    return perform_inference(
+        model=extractor_model,
+        tokenizer=extractor_tokenizer,
+        article=datapoint["article"],
+        top_k=10,
+    )
 
 
 processed = process(datapoint)
@@ -89,7 +111,7 @@ processed = process(datapoint)
 st.subheader("Pre-processing: Rouge Maximisation")
 if st.checkbox("Show pre-processing"):
     st.text_area(
-        f"Processed Lay Summary ({len(processed)} chars)",
+        f"Processed Article ({len(processed)} chars)",
         processed,
         height=150,
         disabled=True,
