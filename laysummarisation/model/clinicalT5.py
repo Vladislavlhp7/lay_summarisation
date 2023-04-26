@@ -1,17 +1,12 @@
-import torch
-from laysummarisation.utils import compute_metrics
-import wandb
-from datasets import Dataset
 import pandas as pd
+import torch
+from datasets import Dataset
+from transformers import (DataCollatorForSeq2Seq, Seq2SeqTrainer,
+                          Seq2SeqTrainingArguments, T5ForConditionalGeneration,
+                          T5Tokenizer, TextDataset)
 
-from transformers import (
-    T5Tokenizer,
-    T5ForConditionalGeneration,
-    TextDataset,
-    DataCollatorForSeq2Seq,
-    Seq2SeqTrainingArguments,
-    Seq2SeqTrainer,
-)
+import wandb
+from laysummarisation.utils import compute_metrics
 
 
 def process_data_to_model_inputs(batch, tokenizer):
@@ -68,7 +63,7 @@ def main():
     # eval_df = pd.read_json("../../laySummarisation/data/input/rouge/eLife_val.jsonl", lines=True)
 
     # Load Tokenizer and Model
-    model_name = "../clinical-t5/1.0.0/Clinical-T5-Sci/"
+    model_name = "../weights/Clinical-T5-Sci/"
     tokenizer = T5Tokenizer.from_pretrained(model_name)
     model = T5ForConditionalGeneration.from_pretrained(model_name)
 
@@ -82,15 +77,15 @@ def main():
         batched=True,
         remove_columns=["article", "lay_summary"],
     )
-
-    eval_dataset = Dataset.from_pandas(eval_df).map(
-        lambda x: process_data_to_model_inputs(x, tokenizer),
-        batched=True,
-        remove_columns=["article", "lay_summary"],
+    eval_dataset = TextDataset(
+        tokenizer=tokenizer,
+        file_path="./data/input/rouge/eLife_val.jsonl",
+        column_names=["article", "lay_summary"],
+        block_size=1024,
     )
 
     training_args = Seq2SeqTrainingArguments(
-        output_dir="./results",
+        output_dir="./tmp/t5",
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,
         predict_with_generate=True,
