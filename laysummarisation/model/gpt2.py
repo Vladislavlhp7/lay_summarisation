@@ -137,6 +137,8 @@ def main(conf: Arguments):
         evaluation_strategy="epoch",
         report_to=["wandb"],
         learning_rate=conf.lr,
+        fp16=True,
+        fp16_full_eval=True,
     )
 
     train_df = pd.read_json(conf.ftrain, lines=True)
