@@ -2,10 +2,6 @@
 
 Project as part of COMP34812: Natural Language Understanding
 
-# TODO
-
-General Theme: Attempt to find a way to fit the necessary contextual information into the limit context size for the T5 model.
-
 ## Installation
 
 Preferably use poetry. See install info [here](https://python-poetry.org/docs/).
