@@ -13,7 +13,7 @@ from transformers import (GPT2Config, GPT2LMHeadModel,
                           TrainingArguments)
 
 
-torch.empty_cache()
+torch.cuda.empty_cache()
 
 gc.collect()
 
