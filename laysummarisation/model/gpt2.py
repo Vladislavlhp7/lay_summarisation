@@ -188,6 +188,24 @@ def main(conf: Arguments):
         ],
     )
 
+    print(train_dataset[0])
+    print(eval_dataset[0])
+    # Create the train and evaluation datasets
+    # train_dataset = LaySummarizationDataset(
+    #     [
+    #         build_inputs(row["article"], row["lay_summary"], tokenizer)
+    #         for _, row in train_df.iterrows()
+    #     ],
+    #     tokenizer,
+    # )
+    # eval_dataset = LaySummarizationDataset(
+    #     [
+    #         build_inputs(row["article"], row["lay_summary"], tokenizer)
+    #         for _, row in eval_df.iterrows()
+    #     ],
+    #     tokenizer,
+    # )
+
     # Initialize the trainer with the model, training arguments, and datasets
     trainer = Trainer(
         model=model,
