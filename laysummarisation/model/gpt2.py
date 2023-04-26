@@ -1,19 +1,12 @@
-from dataclasses import dataclass, field
 import os
+from dataclasses import dataclass, field
 
 import pandas as pd
 import torch
-
 # from torch.utils.data import Dataset
 from datasets import Dataset
-from transformers import (
-    GPT2Config,
-    GPT2LMHeadModel,
-    GPT2Tokenizer,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-)
+from transformers import (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
+                          HfArgumentParser, Trainer, TrainingArguments)
 
 import wandb
 from laysummarisation.utils import compute_metrics
@@ -76,7 +69,8 @@ class Arguments:
         metadata={"help": "The number of steps between saving checkpoints"},
     )
 
-def generate_summary(model, tokenizer, article: str, max_length: int = 512, args: TrainingArguments = None):
+
+def generate_summary(model, tokenizer, article: str, max_length: int = 512):
     """
     Generate summary from the GPT-2 model
     Args:
@@ -91,13 +85,18 @@ def generate_summary(model, tokenizer, article: str, max_length: int = 512, args
     model.eval()
     with torch.no_grad():
         input_ids = tokenizer.encode(
-            "Simplify: " + article, return_tensors="pt", max_length=max_length, truncation=True, padding="max_length"
+            "Simplify: " + article,
+            return_tensors="pt",
+            max_length=max_length,
+            truncation=True,
+            padding="max_length",
         )
 
-        if  torch.cuda.is_available():
-            input_ids = input_ids.to("cuda")
+        input_ids = input_ids.to(model.device)
 
-        output = model.generate(input_ids, max_length=max_length, num_return_sequences=1)
+        output = model.generate(
+            input_ids, max_length=max_length, num_return_sequences=1
+        )
 
     summary = tokenizer.decode(output[0], skip_special_tokens=True)
     return summary
@@ -128,12 +127,16 @@ def load_gpt_model(model_path: str, device: str = "cpu"):
     try:
         tokenizer = GPT2Tokenizer.from_pretrained(model_path)
     except OSError:
-        model_name = 'gpt2'
+        model_name = "gpt2"
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
     return model, tokenizer
 
+
 def build_inputs(
-    batch, tokenizer: GPT2Tokenizer, max_length: int = 1024, summary_prefix: str = "Simplify: "
+    batch,
+    tokenizer: GPT2Tokenizer,
+    max_length: int = 1024,
+    summary_prefix: str = "Simplify: ",
 ) -> dict:
     batch["input_ids"] = tokenizer.encode(
         summary_prefix + batch["article"],
@@ -151,7 +154,6 @@ def build_inputs(
     )
 
     return batch
-
 
 
 def main(conf: Arguments):

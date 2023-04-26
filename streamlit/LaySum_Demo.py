@@ -8,9 +8,13 @@ Hint: Check how you connect a port to CSF such as for Jupyter.
 Now check if you can do the same for Streamlit.
 """
 
+import torch
+
 import streamlit as st
 from laysummarisation.inference.extractor_model import perform_inference
+from laysummarisation.inference.gpt2 import gpt_summary
 from laysummarisation.model.extractor_model import load_extractor_model
+from laysummarisation.model.gpt2 import load_gpt_model
 from laysummarisation.process.greedy_rouge import process_entry
 from laysummarisation.utils import load_jsonl_pandas, set_seed
 
@@ -85,11 +89,16 @@ if st.checkbox("Show datapoint preview"):
 # top n
 
 # Rouge Maximisation
+# Classification result
+# Model input
+# Model output
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 @st.cache_resource
 def load_extractor():
-    return load_extractor_model("./weights/Bio_ClinicalBERT_2e-05/")
+    return load_extractor_model("./weights/Bio_ClinicalBERT_2e-05/", device)
 
 
 extractor_model, extractor_tokenizer = load_extractor()
@@ -117,13 +126,39 @@ if st.checkbox("Show pre-processing"):
         disabled=True,
     )
 
-# Classification result
-# Model input
-# Model output
-
 
 # Summarisation result
+# GPT2
 # Load the corresponning model
+@st.cache_resource
+def load_gpt():
+    return load_gpt_model("./weights/gpt2/", device)
+
+
+gpt_model, gpt_tokenizer = load_gpt()
+
+
+@st.cache_data
+def gpt_summarise():
+    return gpt_summary(
+        article=processed,
+        model=gpt_model,
+        tokenizer=gpt_tokenizer,
+        max_length=1024,
+    )
+
+
+gpt_final = gpt_summarise()
+
+st.subheader("Summarisation: GPT2")
+if st.checkbox("Show summarisation"):
+    st.text_area(
+        f"Summarisation ({len(gpt_final)} chars)",
+        gpt_final,
+        height=150,
+        disabled=True,
+    )
+
 # Button to load the model so it doesn't load on every page load
 # Model input
 # Model output

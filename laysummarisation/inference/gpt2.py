@@ -1,5 +1,7 @@
-from transformers import (TrainingArguments)
-from laysummarisation.model.gpt2 import generate_summary 
+from transformers import TrainingArguments
+
+from laysummarisation.model.gpt2 import generate_summary
+
 
 def gpt_summary(model, tokenizer, article: str, max_length: int = 1024):
     """
@@ -16,6 +18,7 @@ def gpt_summary(model, tokenizer, article: str, max_length: int = 1024):
         summary (str): The generated summary.
     """
 
-    args = TrainingArguments(output_dir='tmp/')
-    summary = generate_summary(model, tokenizer, article, max_length=max_length, args=args)
+    summary = generate_summary(
+        model, tokenizer, article, max_length=max_length
+    )
     return summary
