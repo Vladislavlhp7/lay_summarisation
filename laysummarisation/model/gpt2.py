@@ -77,10 +77,10 @@ class Arguments:
 
 
 def build_inputs(
-    batch, tokenizer: GPT2Tokenizer, max_length: int = 512
+    batch, tokenizer: GPT2Tokenizer, max_length: int = 1024, summary_prefix: str = "Simplify: "
 ) -> dict:
     batch["input_ids"] = tokenizer.encode(
-        batch["article"],
+        summary_prefix + batch["article"],
         return_tensors="pt",
         max_length=max_length,
         truncation=True,
@@ -95,6 +95,7 @@ def build_inputs(
     )
 
     return batch
+
 
 
 def main(conf: Arguments):
