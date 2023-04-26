@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import os
 
 import pandas as pd
 import torch
@@ -102,6 +103,34 @@ def generate_summary(model, tokenizer, article: str, max_length: int = 512, args
     return summary
 
 
+def load_gpt_model(model_path: str, device: str = "cpu"):
+    """
+    Load the extractor model
+
+    Args:
+        model_path (str): The path to the model.
+        device (str): The device to use.
+
+    Returns:
+        model (BertForSequenceClassification): The model.
+        tokenizer (BertTokenizerFast): The tokenizer.
+    """
+    # Load model
+    model_dir = os.path.dirname(model_path)
+    output_model_file = f"{model_dir}/pytorch_model.bin"
+    output_config_file = f"{model_dir}/config.json"
+    config = GPT2Config.from_json_file(output_config_file)
+    model = GPT2LMHeadModel(config)
+    model.to(device)
+    model.load_state_dict(torch.load(output_model_file, map_location=device))
+
+    # Load Tokenizer
+    try:
+        tokenizer = GPT2Tokenizer.from_pretrained(model_path)
+    except OSError:
+        model_name = 'gpt2'
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+    return model, tokenizer
 
 def build_inputs(
     batch, tokenizer: GPT2Tokenizer, max_length: int = 1024, summary_prefix: str = "Simplify: "
