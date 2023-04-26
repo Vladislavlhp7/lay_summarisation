@@ -1,18 +1,12 @@
+import os
 from dataclasses import dataclass, field
 
 import pandas as pd
 import torch
-
 # from torch.utils.data import Dataset
 from datasets import Dataset
-from transformers import (
-    GPT2Config,
-    GPT2LMHeadModel,
-    GPT2Tokenizer,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-)
+from transformers import (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
+                          HfArgumentParser, Trainer, TrainingArguments)
 
 import wandb
 from laysummarisation.utils import compute_metrics
@@ -76,11 +70,76 @@ class Arguments:
     )
 
 
+def generate_summary(model, tokenizer, article: str, max_length: int = 512):
+    """
+    Generate summary from the GPT-2 model
+    Args:
+        model: The model.
+        tokenizer: The tokenizer.
+        article: The article to summarise.
+        max_length: The maximum number of tokens to generate.
+        args: The input arguments to the Trainer.
+    Returns:
+        summary (str): The generated summary.
+    """
+    model.eval()
+    with torch.no_grad():
+        input_ids = tokenizer.encode(
+            "Simplify: " + article,
+            return_tensors="pt",
+            max_length=max_length,
+            truncation=True,
+            padding="max_length",
+        )
+
+        input_ids = input_ids.to(model.device)
+
+        output = model.generate(
+            input_ids, max_length=max_length, num_return_sequences=1
+        )
+
+    summary = tokenizer.decode(output[0], skip_special_tokens=True)
+    return summary
+
+
+def load_gpt_model(model_path: str, device: str = "cpu"):
+    """
+    Load the extractor model
+
+    Args:
+        model_path (str): The path to the model.
+        device (str): The device to use.
+
+    Returns:
+        model (BertForSequenceClassification): The model.
+        tokenizer (BertTokenizerFast): The tokenizer.
+    """
+    # Load model
+    model_dir = os.path.dirname(model_path)
+    output_model_file = f"{model_dir}/pytorch_model.bin"
+    output_config_file = f"{model_dir}/config.json"
+    config = GPT2Config.from_json_file(output_config_file)
+    model = GPT2LMHeadModel(config)
+    model.to(device)
+    model.load_state_dict(torch.load(output_model_file, map_location=device))
+
+    # Load Tokenizer
+    try:
+        tokenizer = GPT2Tokenizer.from_pretrained(model_path)
+    except OSError:
+        model_name = "gpt2"
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+    return model, tokenizer
+
+
 def build_inputs(
-    batch, tokenizer: GPT2Tokenizer, max_length: int = 512
+    batch,
+    tokenizer: GPT2Tokenizer,
+    max_length: int = 1024,
+    summary_prefix: str = "Simplify: ",
 ) -> dict:
     batch["input_ids"] = tokenizer.encode(
-        batch["article"],
+        summary_prefix + batch["article"],
         return_tensors="pt",
         max_length=max_length,
         truncation=True,
