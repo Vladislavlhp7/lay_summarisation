@@ -77,7 +77,7 @@ class Arguments:
 
 
 def build_inputs(
-    batch, tokenizer: GPT2Tokenizer, max_length: int = 1024
+    batch, tokenizer: GPT2Tokenizer, max_length: int = 512
 ) -> dict:
     batch["input_ids"] = tokenizer.encode(
         batch["article"],
@@ -143,12 +143,12 @@ def main(conf: Arguments):
     eval_df = pd.read_json(conf.fvalid, lines=True)
 
     train_dataset = Dataset.from_pandas(train_df).map(
-        lambda x: build_inputs(x, tokenizer),
+        lambda x: build_inputs(x, tokenizer, max_length=conf.max_encode),
         remove_columns=["article", "lay_summary"],
     )
 
     eval_dataset = Dataset.from_pandas(eval_df).map(
-        lambda x: build_inputs(x, tokenizer),
+        lambda x: build_inputs(x, tokenizer, max_length=conf.max_encode),
         remove_columns=["article", "lay_summary"],
     )
 
