@@ -313,16 +313,20 @@ def compute_metrics(pred, tokenizer) -> Dict[str, float]:
     Returns:
         A dictionary with Rouge2 Precision, Recall, and F-measure.
     """
-
+    print(pred)
     # Extract the label IDs and predicted IDs from the input NamedTuple
     labels_ids = pred.label_ids
     pred_ids = pred.predictions
+
 
     # Load the Rouge metric from the datasets library
     # rouge = evaluate.load("rouge")
 
     rouge = rouge_scorer.RougeScorer(["rouge2"])
 
+    print()
+    print()
+    print(pred_ids)
     # Decode the predicted and label IDs to strings, skipping special tokens
     pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
     labels_ids[labels_ids == -100] = tokenizer.pad_token_id
