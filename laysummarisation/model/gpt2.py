@@ -1,4 +1,3 @@
-import gc
 from dataclasses import dataclass, field
 
 import pandas as pd
@@ -17,10 +16,6 @@ from transformers import (
 
 import wandb
 from laysummarisation.utils import compute_metrics
-
-wandb.init(mode="disabled")
-
-gc.collect()
 
 
 @dataclass
@@ -140,6 +135,7 @@ def main(conf: Arguments):
         save_steps=conf.save_steps,
         save_total_limit=2,
         evaluation_strategy="epoch",
+        report_to=["wandb"],
         learning_rate=conf.lr,
     )
 
