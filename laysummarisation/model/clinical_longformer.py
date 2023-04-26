@@ -63,9 +63,9 @@ def train(conf: LFParserConfig):
 
     args = Seq2SeqTrainingArguments(
         predict_with_generate=True,
-        output_dir=conf.save_dir,
-        evaluation_strategy="steps",
-        save_strategy="steps",
+        output_dir=f"{conf.save_dir}/{conf.corpus}",
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
         logging_steps=conf.logging_steps,
         warmup_steps=conf.warmup_steps,
         save_total_limit=2,
@@ -78,6 +78,8 @@ def train(conf: LFParserConfig):
         run_name=model_name,
         report_to=["wandb"],
         eval_steps=conf.eval_steps,
+        fp16=True,
+        fp16_full_eval=True,
     )
 
     train_df = load_jsonl_pandas(conf.ftrain)

@@ -14,5 +14,6 @@ module load compilers/gcc/9.3.0
 export OMP_NUM_THREADS=$NSLOTS
 
 #! pip install datasets
+source activate nlu
 
 ./scripts/train/clinicallf.sh

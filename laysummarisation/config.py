@@ -15,6 +15,9 @@ class LFParserConfig:
     fvalid: str = field(
         metadata={"help": "Validation file (.jsonl)"},
     )
+    corpus: str = field(
+        metadata={"help": "The corpus name"},
+    )
     save_dir: str = field(
         metadata={"help": "The directory to save the model"},
     )
