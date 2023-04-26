@@ -9,6 +9,7 @@ Now check if you can do the same for Streamlit.
 """
 
 import torch
+from rouge_score import rouge_scorer
 
 import streamlit as st
 from laysummarisation.inference.extractor_model import perform_inference
@@ -16,7 +17,8 @@ from laysummarisation.inference.gpt2 import gpt_summary
 from laysummarisation.model.extractor_model import load_extractor_model
 from laysummarisation.model.gpt2 import load_gpt_model
 from laysummarisation.process.greedy_rouge import process_entry
-from laysummarisation.utils import load_jsonl_pandas, set_seed
+from laysummarisation.utils import (compute_readability_metrics,
+                                    load_jsonl_pandas, set_seed)
 
 # sys.path.append("../laysummarisation")
 
@@ -193,4 +195,31 @@ if st.checkbox("Show summarisation"):
     )
 
 
+@st.cach_data
+def compute_metrics():
+    return compute_readability_metrics(
+        [datapoint["lay_summary"], gpt_final, longformer_final]
+    )
+
+
+metrics = compute_metrics()
+
+st.subheader("Evaluation: Readability Metrics")
+if st.checkbox("Show metrics"):
+    st.write("Metrics (lay summary)")
+    metrics[0]
+    st.write("Metrics (GPT2)")
+    metrics[1]
+    st.write("Metrics (Longformer)")
+    metrics[2]
+
+rouge = rouge_scorer.RougeScorer(["rouge2", "rouge1", "rougeL"])
+
 # Rouge metric, comparison to model lay sum
+st.subheader("Evaluation: Rouge Metrics")
+st.write("Rouge metrics (GPT2)")
+rouge.score(datapoint["lay_summary"], gpt_final)
+
+
+st.write("Rouge metrics (Longformer)")
+rouge.score(datapoint["lay_summary"], longformer_final)
