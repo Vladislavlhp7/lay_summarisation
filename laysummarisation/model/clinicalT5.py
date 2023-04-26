@@ -63,7 +63,7 @@ def main():
     # eval_df = pd.read_json("../../laySummarisation/data/input/rouge/eLife_val.jsonl", lines=True)
 
     # Load Tokenizer and Model
-    model_name = "../weights/Clinical-T5-Sci/"
+    model_name = "../../weights/Clinical-T5-Sci/"
     tokenizer = T5Tokenizer.from_pretrained(model_name, local_files_only=True)
     model = T5ForConditionalGeneration.from_pretrained(model_name, local_files_only=True)
 
