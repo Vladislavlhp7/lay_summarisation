@@ -3,10 +3,11 @@ import re
 from time import sleep
 from random import seed
 from typing import Dict, List, Tuple
-
+from transformers import pipeline
 import evaluate
 import numpy as np
 import pandas as pd
+import spacy
 import torch
 from datasets import Dataset, DatasetDict
 from nltk import sent_tokenize
@@ -543,6 +544,27 @@ def compute_readability_metrics(summaries):
 
 def remove_full_stop_after_et_al(text: str) -> str:
     return re.sub(r"(et al) \. (?![A-Z][a-z])", r"\1", text)
+
+# TODO: load model in advance
+def RNPTC(d: str, model_name: str= 'bert-base-uncased'):
+    model = pipeline('fill-mask', model=model_name)
+    nlp = spacy.load("en_core_web_sm")
+    doc_pipeline = nlp(d)
+    # extract all noun phrases in summary
+    noun_phrases = [chunk.text for chunk in doc_pipeline.noun_chunks]
+    # remove phrases that only consist of stop words
+    noun_phrases = [phrase for phrase in noun_phrases if not all(token.is_stop for token in nlp(phrase))]
+    noun_phrases_prob = []
+    for noun_phrase in noun_phrases:
+        d_ = d
+        p = []  # probability of each token in noun phrase
+        for token in noun_phrase.split():
+            d_ = d_.replace(token, "[MASK]")  # mask each token in noun phrase
+        output = model(d_)
+        for score_wrapper in output:
+            token_score = score_wrapper[0]
+            p.append(token_score['score'])
+
 
 
 def main():
