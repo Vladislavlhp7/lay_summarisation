@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 import gc
 import pandas as pd
 import torch
-# import wandb
 from datasets import load_metric
+from torch.utils.data import Dataset
 from rouge import Rouge
 from scipy.special import softmax
 import numpy as np
@@ -20,6 +20,22 @@ def build_inputs(text: str, summary: str, tokenizer: GPT2Tokenizer, max_length: 
     target_ids = tokenizer.encode(summary, return_tensors="pt", max_length=max_length, truncation=True, padding='max_length')
     
     return {"input_ids": input_ids, "labels": target_ids}
+
+class LaySummarizationDataset(Dataset):
+    def __init__(self, data, tokenizer):
+        self.data = data
+        self.tokenizer = tokenizer
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        item = self.data[idx]
+        return {
+            "input_ids": item["input_ids"].squeeze(),
+            "labels": item["labels"].squeeze(),
+        }
+
 
 def main():
     print("CUDA available:" + str(torch.cuda.is_available()))
@@ -56,8 +72,8 @@ def main():
     eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True).head(10)
 
     # Create the train and evaluation datasets
-    train_dataset = [build_inputs(row['article'], row['lay_summary'], tokenizer) for _, row in train_df.iterrows()]
-    eval_dataset = [build_inputs(row['article'], row['lay_summary'], tokenizer) for _, row in eval_df.iterrows()]
+    train_dataset = LaySummarizationDataset([build_inputs(row['article'], row['lay_summary'], tokenizer) for _, row in train_df.iterrows()], tokenizer)
+    eval_dataset = LaySummarizationDataset([build_inputs(row['article'], row['lay_summary'], tokenizer) for _, row in eval_df.iterrows()], tokenizer)
 
     # Initialize the trainer with the model, training arguments, and datasets
     trainer = Trainer(
