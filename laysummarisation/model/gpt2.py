@@ -134,6 +134,8 @@ def main():
         ],
     )
 
+    print(train_dataset[0])
+    print(eval_dataset[0])
     # Create the train and evaluation datasets
     # train_dataset = LaySummarizationDataset(
     #     [
