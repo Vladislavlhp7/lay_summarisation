@@ -69,8 +69,8 @@ def main():
 
 
     # Load files
-    train_df = pd.read_json("./data/input/rouge/eLife_train.jsonl", lines=True)
-    eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True)
+    train_df = pd.read_json("./data/input/rouge/eLife_train.jsonl", lines=True).head(100)
+    eval_df = pd.read_json("./data/input/rouge/eLife_val.jsonl", lines=True).head(50)
 
     # Create Datasets from pandas DataFrames
     train_dataset = Dataset.from_pandas(train_df).map(
@@ -107,7 +107,7 @@ def main():
         model=model,
         tokenizer=tokenizer,
         args=training_args,
-        compute_metrics=compute_metrics,  # The `compute_metrics` function needs to be defined before calling this.
+        compute_metrics= lambda x: compute_metrics(x, tokenizer),  # The `compute_metrics` function needs to be defined before calling this.
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=data_collator,
