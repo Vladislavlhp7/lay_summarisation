@@ -7,17 +7,13 @@ from datasets import load_metric
 from rouge import Rouge
 from scipy.special import softmax
 import numpy as np
+from laysummarisation.utils import compute_metrics
 from sklearn.model_selection import train_test_split
 from transformers import (GPT2Config, GPT2LMHeadModel,
                           GPT2Tokenizer, HfArgumentParser, Trainer,
                           TrainingArguments)
 
-
-torch.cuda.empty_cache()
-
 gc.collect()
-
-
 def build_inputs(text: str, summary: str, tokenizer: GPT2Tokenizer, max_length: int = 1024) -> dict:
     
     input_ids = tokenizer.encode(text, return_tensors="pt", max_length=max_length, truncation=True, padding='max_length')
@@ -25,36 +21,11 @@ def build_inputs(text: str, summary: str, tokenizer: GPT2Tokenizer, max_length: 
     
     return {"input_ids": input_ids, "labels": target_ids}
 
-
-def compute_metrics(eval_pred, tokenizer: GPT2Tokenizer) -> dict:
-
-    predictions, labels = eval_pred
-
-    pred_ids = np.argmax(predictions, axis=-1)
-
-    pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
-    labels_str = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-    rouge = Rouge()
-    scores = rouge.get_scores(pred_str, labels_str, avg=True)
-
-    accuracy = sum([1 if p == l else 0 for p, l in zip(pred_str, labels_str)]) / len(labels_str)
-
-    results = {
-        "rouge1_f": scores["rouge-1"]["f"],
-        "rouge2_f": scores["rouge-2"]["f"],
-        "rougeL_f": scores["rouge-l"]["f"],
-        "accuracy": accuracy,
-    }
-
-    return results
-
-
 def main():
-    # print("CUDA available:" + str(torch.cuda.is_available()))
-    # device = "cuda" if torch.cuda.is_available() else "cpu"
-    # if device == "cuda":
-    #     torch.cuda.empty_cache()
+    print("CUDA available:" + str(torch.cuda.is_available()))
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cuda":
+        torch.cuda.empty_cache()
 
     # # Load files
     # print("Loading files...")
@@ -68,7 +39,7 @@ def main():
     tokenizer.pad_token = tokenizer.eos_token
     model = GPT2LMHeadModel.from_pretrained(model_name, config=config)
 
-    # model.to(device)
+    model.to(device)
 
     training_args = TrainingArguments(
         output_dir="./lay_summary_model",
