@@ -4,6 +4,7 @@ author: Ahmed Soliman \And Marc Wenzlawski \And Vladislav Yotkov
 header-includes: |
     \pdfoutput=1
     \usepackage{acl}
+    \usepackage{enumitem}
     \usepackage{natbib}
     \bibliographystyle{acl_natbib.bst}
 ---
@@ -17,6 +18,27 @@ header-includes: |
 \section{Introduction}\label{sec:introduction}
 \section{Related Work}\label{sec:related-work}
 \section{Methods and Datasets}\label{sec:methods}
+\subsection{Dataset}\label{sec:dataset}
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Dataset} & \textbf{Training} & \textbf{Validation} \\
+        \hline
+        PLOS & $24,773$ & $1,376$ \\
+        \hline
+        eLife & $4,346$ & $241$ \\
+        \hline
+    \end{tabular}
+    \caption{PLOS and eLife: number of articles}\label{tab:dataset_stats}
+\end{table}
+\subsection{Extractor Network}\label{sec:extractor-network}
+Due to the extreme length of medical articles, it is not feasible to pass them directly as input to the abstractive models due to their limited maximum input size:
+\begin{enumerate}[label=(\roman*)]
+    \item Clinical-T5~\cite{lehman2023clinical}: $512$ tokens
+    \item GPT-2~\cite{radford2019language}: $1,024$ tokens
+    \item Clinical-Longformer~\cite{li2023comparative}: $4,096$ tokens
+\end{enumerate}
 \section{Evaluation}\label{sec:evaluation}
 \section{Discussion and Conclusion}\label{sec:discussion-conclusion}
 
