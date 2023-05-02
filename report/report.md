@@ -10,6 +10,7 @@ header-includes:
   - \usepackage{natbib}
   - \usepackage[inline]{enumitem}
   - \bibliographystyle{acl_natbib.bst}
+graphics: yes
 abstract: |
   In this work we design an extractive-abstractive lay summarisation pipeline for biomedical papers [@biolaysumm-2023-overview] that generates summaries for non-experts.
   For that purpose, we create a sentence-level ROUGE-maximising dataset from the gold summaries and the whole articles, which we then use to train a BERT-based classifier to identify the most important sentences per article.
@@ -72,6 +73,20 @@ ii. We further resolve the class imbalance problem by random under-sampling the 
           to match the number of samples in the minority class (i.e., $1$);
 
 Our final extractive training dataset consists of $944,234$ sentences with a completely balanced class distribution.
+We fine-tune the extractive model with a batch size of $32$ and a learning rate of $2e-5$ following the guidance from 
+BERT's authors [@Devlin2019BERTPO] and find that the model starts to over-fit beyond $2$ epochs 
+(see Figures \ref{fig:extractor-train-loss} and \ref{fig:extractor-eval-loss}).
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{charts/extractor-eval-f1.png}
+    \caption{BioClinicalBERT: Evaluation F1}\label{fig:extractor-eval-f1}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{charts/extractor-eval-loss.png}
+    \caption{BioClinicalBERT: Evaluation Loss}\label{fig:extractor-eval-loss}
+\end{figure}
 
 
 # Evaluation {#sec:evaluation}
