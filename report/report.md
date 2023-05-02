@@ -72,10 +72,12 @@ i. We base our extractive binary dataset on both eLife and PLOS data to maximise
 ii. We further resolve the class imbalance problem by random under-sampling the majority class (i.e., $0$) 
           to match the number of samples in the minority class (i.e., $1$);
 
-Our final extractive training dataset consists of $944,234$ sentences with a completely balanced class distribution.
-We fine-tune the extractive model with a batch size of $32$ and a learning rate of $2e-5$ following the guidance from 
+Our final extractive dataset consists of $944,234$ sentences with a completely balanced class distribution.
+Data is further split into $80%$-training, $10%$-validation and $10%$-testing datasets in a random stratified manner.
+We then fine-tune the extractive model with a batch size of $32$ and a learning rate of $2e-5$ following the guidance from 
 BERT's authors [@Devlin2019BERTPO] and find that the model starts to over-fit beyond $2$ epochs 
 (see Figures \ref{fig:extractor-eval-f1} and \ref{fig:extractor-eval-loss}).
+We also report high F1 scores of $0.767$ and $0.765$ on the validation and test sets, respectively.
 
 \begin{figure}
     \centering
