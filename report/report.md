@@ -75,18 +75,17 @@ ii. We further resolve the class imbalance problem by random under-sampling the 
 Our final extractive training dataset consists of $944,234$ sentences with a completely balanced class distribution.
 We fine-tune the extractive model with a batch size of $32$ and a learning rate of $2e-5$ following the guidance from 
 BERT's authors [@Devlin2019BERTPO] and find that the model starts to over-fit beyond $2$ epochs 
-(see Figures \ref{fig:extractor-train-loss} and \ref{fig:extractor-eval-loss}).
+(see Figures \ref{fig:extractor-eval-f1} and \ref{fig:extractor-eval-loss}).
 
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{charts/extractor-eval-f1.png}
     \caption{BioClinicalBERT: Evaluation F1}\label{fig:extractor-eval-f1}
-\end{figure}
-\begin{figure}
-    \centering
+    \vspace{0.25cm}
     \includegraphics[width=0.5\textwidth]{charts/extractor-eval-loss.png}
     \caption{BioClinicalBERT: Evaluation Loss}\label{fig:extractor-eval-loss}
 \end{figure}
+
 
 
 # Evaluation {#sec:evaluation}
