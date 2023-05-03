@@ -25,6 +25,8 @@ abstract: |
 
 # Methods and Datasets {#sec:methods}
 ## Dataset {#sec:dataset}
+The data we used is sourced from biomedical research articles in English published in the Public Library of Science (PLOS) and eLife [@goldsack]. 
+The datasets (Tables~\ref{tab:dataset_stats} and~\ref{tab:dataset_stats}) contain technical abstracts and lay summaries written by experts, which are part of BioLaySumm2023 shared task [@biolaysumm-2023-overview].
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|}
