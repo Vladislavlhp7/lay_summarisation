@@ -90,6 +90,11 @@ We also report high F1 scores of $0.767$ and $0.765$ on the validation and test 
     \caption{BioClinicalBERT: Evaluation Loss}\label{fig:extractor-eval-loss}
 \end{figure}
 
+We then use the BioClinicalBERT model to predict the probability of each sentence in the article being \emph{summarising}.
+The top $10$ sentences with the highest probability are selected and concatenated to produce the final extractive summary.
+While we are aware that this can cause the \emph{dangling anaphora phenomenon} [@lin2009summarization], we use the 
+extracted text only as an intermediate step fed into the abstractive models which paraphrase it into lay language.
+
 
 
 # Evaluation {#sec:evaluation}
