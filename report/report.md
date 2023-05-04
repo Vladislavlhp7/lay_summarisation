@@ -155,20 +155,38 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
 
 \begin{table*}[htbp]
     \centering
-    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|}
         \hline
-        \textbf{Model} & \textbf{Rouge1} & \textbf{Rouge2} & \textbf{RougeL} & \textbf{FKGL} & \textbf{ARI} & \textbf{Gunning} \\
+        \textbf{Model} & \textbf{Rouge1} & \textbf{Rouge2} & \textbf{RougeL} \\
         \hline
-            Lexrank & $0.334$ & $0.085$ & $0.164$ & $33.59$ & $15.41$ & $18.50$ \\
+            Lexrank & $0.334$ & $0.085$ & $0.164$ \\
         \hline
-            Extractive & $0.329$ & $0.0998$ & $0.163$ & $10.6$ & $25.01$  & $26.22$ \\
+            Extractive & $0.329$ & $0.0998$ & $0.163$ \\
         \hline
-            GPT2 & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+            GPT2 & $0$ & $0$ & $0$ \\
         \hline
-            Longformer & $0.289$ & $0.062$ & $0.143$ & $27.33$ & $16.89$ & $18.44$ \\
+            Longformer & $0.289$ & $0.062$ & $0.143$ \\
         \hline
     \end{tabular}
-    \caption{ROUGE and readability statistics.}\label{tab:dataset_stats}
+    \caption{ROUGE metrics.}\label{tab:dataset_stats}
+\end{table*}
+
+\begin{table*}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        \textbf{Model} & \textbf{FKGL} & \textbf{ARI} & \textbf{Gunning} \\
+        \hline
+            Lexrank & $33.59$ & $15.41$ & $18.50$ \\
+        \hline
+            Extractive & $10.6$ & $25.01$  & $26.22$ \\
+        \hline
+            GPT2 & $0$ & $0$ & $0$ \\
+        \hline
+            Longformer & $27.33$ & $16.89$ & $18.44$ \\
+        \hline
+    \end{tabular}
+    \caption{Readability metrics. FKGL - higher is better, ARI - lower is better, Gunning - lower is better}\label{tab:dataset_stats}
 \end{table*}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
