@@ -11,6 +11,11 @@ header-includes:
   - \usepackage[inline]{enumitem}
   - \bibliographystyle{acl_natbib.bst}
 graphics: yes
+geometry:
+    - top=15mm
+    - bottom=15mm
+    - left=15mm
+    - right=15mm
 abstract: |
     In this study, we present an extractive-abstractive lay summarization pipeline for biomedical papers aimed at generating accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing both lay summaries and full articles. We employ a BERT-based classifier for identifying the most important sentences within each article. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric, along with readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
     We find that a ROUGE-maximizing extractive summarization approach is effective for generating extractive summaries, with the Clinical-Longformer model achieving the best results for combined ROUGE and readability scores.
@@ -110,7 +115,7 @@ Hyperparameters are set based on widely used values in the literature [@li2022cl
 For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory during training, as this is a common issue with Longformer models.
 We found that a window size of $64$, batch size of $2$, and input size of $1024$ worked best for our dataset.
 
-
+![Longformer evaluation loss](charts/longformer-eval-loss.png)
 
 # Evaluation {#sec:evaluation}
 
