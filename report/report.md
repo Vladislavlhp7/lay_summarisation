@@ -32,7 +32,7 @@ abstract: |
 ## Dataset {#sec:dataset}
 
 The data we used is sourced from biomedical research articles in English published in the Public Library of Science (PLOS) and eLife [@goldsack]. 
-The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats}) contain technical abstracts and lay summaries written by experts, which are part of BioLaySumm2023 shared task [@biolaysumm-2023-overview].
+The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats_sents}) contain technical abstracts and lay summaries written by experts, which are part of BioLaySumm2023 shared task [@biolaysumm-2023-overview].
 
 \begin{table}[htbp]
     \centering
@@ -59,7 +59,7 @@ The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats}) contai
             eLife & $600$ & $14,000$ \\
         \hline
     \end{tabular}
-    \caption{PLOS and eLife: Dataset statistics}\label{tab:dataset_stats}
+    \caption{PLOS and eLife: Dataset statistics}\label{tab:dataset_stats_sents}
 \end{table}
 
 ## Extractor Network {#sec:extractor-network}
