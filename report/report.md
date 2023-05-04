@@ -24,6 +24,13 @@ abstract: |
 ---
 
 # Introduction {#sec:introduction}
+It can be challenging for individuals without expertise to comprehend scientific publications, particularly in biomedicine, 
+where inaccuracies can directly impact health decisions [@islam].
+A possible remedy for this situation is to provide lay summaries, i.e., summaries in simpler terms, which are currently uncommon. 
+Prior research on Automatic Text Summarisation (ATS) has neglected the biomedical domain owing to the absence of data [@chandrasekaran]; 
+however, two recently introduced datasets (PLOS and eLife) have emerged to tackle this issue [@goldsack].
+
+
 
 
 # Methods and Datasets {#sec:methods}
