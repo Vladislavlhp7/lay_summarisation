@@ -125,7 +125,8 @@ training data described in Section \ref{sec:extractor-network}.
 
 ### GPT-2 Abstractor {#sec:gpt2-abstractor}
 
-For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory during training, as this is a common issue with Longformer models.
+For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory 
+during training, as this is a common issue with Longformer models [@orzhenovskii-2021-t5].
 We found that a window size of $64$, batch size of $2$, and input size of $1024$ worked best for our dataset.
 
 ![Longformer evaluation loss](charts/longformer-eval-loss.png)
