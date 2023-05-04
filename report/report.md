@@ -12,11 +12,9 @@ header-includes:
   - \bibliographystyle{acl_natbib.bst}
 graphics: yes
 abstract: |
-  In this work we design an extractive-abstractive lay summarisation pipeline for biomedical papers [@biolaysumm-2023-overview] that generates summaries for non-experts.
-  For that purpose, we create a sentence-level ROUGE-maximising dataset from the gold summaries and the whole articles, which we then use to train a BERT-based classifier to identify the most important sentences per article.
-  Once an extracted summary is produced we feed it into two abstractive models (Clinical-Longformer [@li2023comparative], GPT-2 [@radford2019language]) that paraphrase the summary into a more readable version.
-  To evaluate our models we used the ROUGE metric [@lin-2004-rouge] and the readability metrics - FKGL [@Kincaid1975DerivationON], Gunning Fog Score [@gunning1952technique], and ARI [@senter1967automated] on the gold summaries and the generated summaries.
-  Results ...
+    In this study, we present an extractive-abstractive lay summarization pipeline for biomedical papers aimed at generating accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing both lay summaries and full articles. We employ a BERT-based classifier for identifying the most important sentences within each article. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric, along with readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
+    We find that a ROUGE-maximizing extractive summarization approach is effective for generating extractive summaries, with the Clinical-Longformer model achieving the best results for combined ROUGE and readability scores.
+    Our approach demonstrates the potential for generating lay-friendly summaries of biomedical papers, bridging the gap between expert knowledge and public understanding.
 ---
 
 # Introduction {#sec:introduction}
@@ -24,9 +22,12 @@ abstract: |
 # Related Work {#sec:related-work}
 
 # Methods and Datasets {#sec:methods}
+
 ## Dataset {#sec:dataset}
+
 The data we used is sourced from biomedical research articles in English published in the Public Library of Science (PLOS) and eLife [@goldsack]. 
-The datasets (Tables~\ref{tab:dataset_stats} and~\ref{tab:dataset_stats}) contain technical abstracts and lay summaries written by experts, which are part of BioLaySumm2023 shared task [@biolaysumm-2023-overview].
+The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats}) contain technical abstracts and lay summaries written by experts, which are part of BioLaySumm2023 shared task [@biolaysumm-2023-overview].
+
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|}
@@ -40,6 +41,7 @@ The datasets (Tables~\ref{tab:dataset_stats} and~\ref{tab:dataset_stats}) contai
     \end{tabular}
     \caption{PLOS and eLife: number of articles}\label{tab:dataset_stats}
 \end{table}
+
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|}
@@ -53,7 +55,9 @@ The datasets (Tables~\ref{tab:dataset_stats} and~\ref{tab:dataset_stats}) contai
     \end{tabular}
     \caption{PLOS and eLife: Dataset statistics}\label{tab:dataset_stats}
 \end{table}
+
 ## Extractor Network {#sec:extractor-network}
+
 Due to the extreme length of medical articles (e.g., eLife has an average of 600 sentences per article), 
 it is not feasible to pass them directly as input to the abstractive models due to their limited maximum input size:
 
@@ -65,7 +69,7 @@ to extract the most important sentences from the articles.
 For that purpose, we cast the extraction summarisation problem as supervised binary classification where the input is a sentence $s$ 
 and the output is a binary label indicating whether the sentence should be included in the summary $c$ or not (i.e., 1 and 0, respectively).
 Due to the nature of the provided gold summaries (i.e., abstractive and lay), we generate our own sentence-level 
-dataset by applying the ROUGE-maximisation technique [@zmandar-etal-2021-joint, @nallapati2017summarunner] on the gold summaries and the whole articles. 
+dataset by applying the ROUGE-maximisation technique [@zmandar-etal-2021-joint;@nallapati2017summarunner] on the gold summaries and the whole articles. 
 More formally, for each gold summary sentence $s_{i}^{k}$, we find the sentence $s_{j}^{k}$ in article $a_{k}$ that maximises the ROUGE-2 score between them.
 We then label $s_{j}^{k}$ as 1 and the rest of the sentences in $a_{k}$ as 0.
 Because the number of sentences in the articles is much larger than the number of sentences in the gold summaries:
@@ -90,14 +94,43 @@ We also report high F1 scores of $0.767$ and $0.765$ on the validation and test 
     \caption{BioClinicalBERT: Evaluation Loss}\label{fig:extractor-eval-loss}
 \end{figure}
 
-We then use the BioClinicalBERT model to predict the probability of each sentence in the article being \emph{summarising}.
+We then use the BioClinicalBERT model to predict the probability of each sentence in the article being _summarising_.
 The top $10$ sentences with the highest probability are selected and concatenated to produce the final extractive summary.
-While we are aware that this can cause the \emph{dangling anaphora phenomenon} [@lin2009summarization], we use the 
+While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
 extracted text only as an intermediate step fed into the abstractive models which paraphrase it into lay language.
+
+## Abstractive Network {#sec:abstractive-network}
+
+Once the extractive summary is generated, we train the abstractive models on the lay summaries and the extractive summaries. For this, we compare two models: GPT-2 [@radford2019language] and Clinical-Longformer [@li2022clinicallongformer]. 
+We fine tune both models separately on eLife and PLOS. This is done due to the difference in structure and the average number of tokens in the lay summaries between the two datasets (i.e., $450$ and $800$ for PLOS and eLife, respectively).
+Hyperparameters are set based on widely used values in the literature [@li2022clinicallongformer;@radford2019language;@Devlin2019BERTPO]. 
+
+**GPT2**
+
+For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory during training, as this is a common issue with Longformer models.
+We found that a window size of $64$, batch size of $2$, and input size of $1024$ worked best for our dataset.
 
 
 
 # Evaluation {#sec:evaluation}
+
+\begin{table*}[htbp]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+        \hline
+        \textbf{Model} & \textbf{Rouge1} & \textbf{Rouge2} & \textbf{RougeL} & \textbf{FKGL} & \textbf{ARI} & \textbf{Gunning} \\
+        \hline
+            Lexrank & $0.334$ & $0.085$ & $0.164$ & $33.59$ & $15.41$ & $18.50$ \\
+        \hline
+            Extractive & $0.329$ & $0.0998$ & $0.163$ & $10.6$ & $25.01$  & $26.22$ \\
+        \hline
+            GPT2 & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+        \hline
+            Longformer & $0.289$ & $0.062$ & $0.143$ & $27.33$ & $16.89$ & $18.44$ \\
+        \hline
+    \end{tabular}
+    \caption{ROUGE and readability statistics.}\label{tab:dataset_stats}
+\end{table*}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
 
