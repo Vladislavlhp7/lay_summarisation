@@ -32,11 +32,11 @@ abstract: |
 ## Dataset {#sec:dataset}
 
 The data we used is sourced from biomedical research articles in English published in the Public Library of Science (PLOS) and eLife [@goldsack]. 
-The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats}) contain technical abstracts and lay summaries written by experts, which are part of BioLaySumm2023 shared task [@biolaysumm-2023-overview].
+The datasets (Tables \ref{tab:dataset_stats_1} and \ref{tab:dataset_stats_2}) contain technical abstracts and lay summaries written by experts, which are part of BioLaySumm2023 shared task [@biolaysumm-2023-overview].
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{c||c|c}
         \hline
         \textbf{Dataset} & \textbf{Training} & \textbf{Validation} \\
         \hline
@@ -45,12 +45,12 @@ The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats}) contai
             eLife & $4,346$ & $241$ \\
         \hline
     \end{tabular}
-    \caption{PLOS and eLife: number of articles}\label{tab:dataset_stats}
+    \caption{PLOS and eLife: number of articles}\label{tab:dataset_stats_1}
 \end{table}
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{c||c|c}
         \hline
         \textbf{Dataset} & \textbf{Avg. Sentences} & \textbf{Avg. Tokens} \\
         \hline
@@ -59,7 +59,7 @@ The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats}) contai
             eLife & $600$ & $14,000$ \\
         \hline
     \end{tabular}
-    \caption{PLOS and eLife: Dataset statistics}\label{tab:dataset_stats}
+    \caption{PLOS and eLife: Dataset statistics}\label{tab:dataset_stats_2}
 \end{table}
 
 ## Extractor Network {#sec:extractor-network}
@@ -67,8 +67,8 @@ The datasets (Tables \ref{tab:dataset_stats} and \ref{tab:dataset_stats}) contai
 Due to the extreme length of medical articles (e.g., eLife has an average of 600 sentences per article), 
 it is not feasible to pass them directly as input to the abstractive models due to their limited maximum input size:
 
-i. GPT-2 [@radford2019language]: $1,024$ tokens, and
-ii. Clinical-Longformer [@li2023comparative]: $4,096$ tokens
+i. **GPT-2** [@radford2019language]: $1,024$ tokens, and
+ii. **Clinical-Longformer** [@li2023comparative]: $4,096$ tokens
 
 To overcome this limitation, we use the BioClinicalBERT [@alsentzer-etal-2019-publicly] model, pre-trained on the MIMIC-III dataset [@Johnson2016MIMICIII],
 to extract the most important sentences from the articles.
@@ -121,12 +121,24 @@ training data described in Section \ref{sec:extractor-network}.
     \caption{Token Distribution of Extracted Summaries}\label{fig:abstractor-eval-rouge}
 \end{figure}
 
-### GPT-2 Abstractor {#sec:gpt2-abstractor}
-
 For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory during training, as this is a common issue with Longformer models.
 We found that a window size of $64$, batch size of $2$, and input size of $1024$ worked best for our dataset.
 
 ![Longformer evaluation loss](charts/longformer-eval-loss.png)
+
+### GPT-2 Abstractor {#sec:gpt2-abstractor}
+
+The GPT-2 is an autoregressive language model that was trained using a casual language modeling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarization task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
+
+Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating 507 tokens for the article and 512 tokens for the summary, with 5 reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.49\textwidth]{charts/gpt_eval_loss}
+    \caption{GPT 2 Evaluation Loss}\label{fig:gpt-eval}
+\end{figure}
+
+In the evaluation phase, we compared the performance of the GPT-2 Abstractor against the Clinical Longformer Abstractor, as well as other summarization models. The results indicate that both models have their strengths and weaknesses, which we will discuss in further detail in the following sections.
 
 # Evaluation {#sec:evaluation}
 
