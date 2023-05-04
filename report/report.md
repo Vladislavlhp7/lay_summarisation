@@ -102,6 +102,8 @@ We also report high F1 scores of $0.767$ and $0.765$ on the validation and test 
 
 We then use the BioClinicalBERT model to predict the probability of each sentence in the article being _summarising_.
 The top $10$ sentences with the highest probability are selected and concatenated to produce the final extractive summary.
+We arrive at this number after analysing the token distribution and finding that 10 sentences is a reasonable number 
+to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the $10$ sentences and their lay paraphrases).
 While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
 extracted text only as an intermediate step fed into the abstractive models which paraphrase it into lay language.
 
