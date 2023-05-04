@@ -111,7 +111,7 @@ Once the extractive summary is generated, we train the abstractive models on the
 We fine tune both models separately on eLife and PLOS. This is done due to the difference in structure and the average number of tokens in the lay summaries between the two datasets (i.e., $450$ and $800$ for PLOS and eLife, respectively).
 Hyperparameters are set based on widely used values in the literature [@li2022clinicallongformer;@radford2019language;@Devlin2019BERTPO]. 
 
-## Clinical Longformer Abstractor {#sec:clinical-longformer-abstractor}
+### Clinical Longformer Abstractor {#sec:clinical-longformer-abstractor}
 The Clinical Longformer [@li2023comparative] is a transformer-based model that is pre-trained on the MIMIC-III dataset [@Johnson2016MIMICIII]
 and we fine-tune it as a sequence-to-sequence task on (a) the gold lay summaries and (b) the ROUGE-maximising 
 training data described in Section \ref{sec:extractor-network}.
@@ -121,7 +121,7 @@ training data described in Section \ref{sec:extractor-network}.
     \caption{Token Distribution of Extracted Summaries}\label{fig:abstractor-eval-rouge}
 \end{figure}
 
-## GPT-2 Abstractor {#sec:gpt2-abstractor}
+### GPT-2 Abstractor {#sec:gpt2-abstractor}
 
 For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory during training, as this is a common issue with Longformer models.
 We found that a window size of $64$, batch size of $2$, and input size of $1024$ worked best for our dataset.
