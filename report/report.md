@@ -10,6 +10,7 @@ header-includes:
   - \usepackage{natbib}
   - \usepackage[inline]{enumitem}
   - \bibliographystyle{acl_natbib.bst}
+  - \setcounter{secnumdepth}{5}
 graphics: yes
 abstract: |
   In this work we design an extractive-abstractive lay summarisation pipeline for biomedical papers [@biolaysumm-2023-overview] that generates summaries for non-experts.
@@ -94,6 +95,16 @@ We then use the BioClinicalBERT model to predict the probability of each sentenc
 The top $10$ sentences with the highest probability are selected and concatenated to produce the final extractive summary.
 While we are aware that this can cause the \emph{dangling anaphora phenomenon} [@lin2009summarization], we use the 
 extracted text only as an intermediate step fed into the abstractive models which paraphrase it into lay language.
+
+## Clinical Longformer Abstractor {#sec:clinical-longformer-abstractor}
+The Clinical Longformer [@li2023comparative] is a transformer-based model that is pre-trained on the MIMIC-III dataset [@Johnson2016MIMICIII]
+and we fine-tune it as a sequence-to-sequence task on (a) the gold lay summaries and (b) the ROUGE-maximising 
+training data described in Section \ref{sec:extractor-network}.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{charts/token_distribution}
+    \caption{Token Distribution of Extracted Summaries}\label{fig:abstractor-eval-rouge}
+\end{figure}
 
 
 
