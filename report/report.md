@@ -158,7 +158,15 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
 
 # Evaluation {#sec:evaluation}
 In this section, we evaluate the performance of the summarization models described in Section \ref{sec:methods}.
+
 # Quantitative Evaluation {#sec:evaluation-quantitative}
+
+We compare our models by calculating the average F1 ROUGE scores on the evaluation PLOS dataset.
+From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as good as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
+On the other hand, we observe that the metrics decrease for the generative models due to their abstractive nature, 
+which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
+Nevertheless, it is clear that the Clinical Longformer outperforms considerably the GPT-2 perhaps due to the fact the latter is pre-trained on out-of-domain data.
+
 
 \begin{table}[htbp]
     \centering
@@ -202,9 +210,11 @@ In this section, we evaluate the performance of the summarization models describ
     \caption{Readability metrics. \\ FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
 \end{table}
 
+
 # Qualitative Evaluation {#sec:evaluation-qualitative}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
+
 ## Limitations {#sec:limitations}
 We identify the following limitations of our work:
 
