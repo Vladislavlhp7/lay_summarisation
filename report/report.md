@@ -28,6 +28,7 @@ abstract: |
 ---
 
 # Introduction {#sec:introduction}
+
 Comprehending biomedical scientific publications can be difficult for non-experts, potentially leading to misinformed health decisions [@islam]. Lay summaries, simplified explanations of complex scientific content, could be a solution, but they are not always available. Despite past challenges in applying Automatic Text Summarisation (ATS) to biomedicine due to insufficient data [@chandrasekaran], two new datasets, PLOS and eLife, offer an opportunity to bridge this gap [@goldsack]. This study investigates ATS techniques for generating biomedical lay summaries using these datasets.
 
 # Methods and Datasets {#sec:methods}
@@ -162,12 +163,6 @@ In this section, we evaluate the performance of the summarization models describ
 
 # Quantitative Evaluation {#sec:evaluation-quantitative}
 
-We compare our models by calculating the average F1 ROUGE scores on the evaluation PLOS dataset.
-From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as good as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
-On the other hand, we observe that the metrics decrease for the generative models due to their abstractive nature, 
-which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
-Nevertheless, it is clear that the Clinical Longformer outperforms considerably the GPT-2 perhaps due to the fact the latter is pre-trained on out-of-domain data.
-
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|c|}
@@ -187,8 +182,6 @@ Nevertheless, it is clear that the Clinical Longformer outperforms considerably 
     \end{tabular}
     \caption{ROUGE F1 Scores.}\label{tab:dataset_stats}
 \end{table}
-
-
 
 \begin{table}[htbp]
     \centering
@@ -212,10 +205,11 @@ Nevertheless, it is clear that the Clinical Longformer outperforms considerably 
     \caption{Readability metrics. \\ FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
 \end{table}
 
-
 # Qualitative Evaluation {#sec:evaluation-qualitative}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
+
+In this section, we discuss the performance of the proposed ATS approaches, their implications, and potential future research directions in the biomedical domain.
 
 ## Limitations {#sec:limitations}
 We identify the following limitations of our work:
@@ -236,13 +230,12 @@ We identify the following limitations of our work:
 
 In light of the limitations discussed, we propose multiple venues for future work:
 
-1. **T5 Experimentation** [@clinicalt5]: We aim to develop and assess the Clinical T5 model as a specialized counterpart to the Clinical Longformer. The T5, a transformer-based model, boasts unique features like a denoising autoencoder in its pretraining objective, which is adept at reconstructing corrupted input text. This makes it suitable for our extractive approach, utilizing sentences from disparate article sections. 
+**T5 Experimentation** [@clinicalt5]: We aim to develop and assess the Clinical T5 model as a specialized counterpart to the Clinical Longformer. The T5, a transformer-based model, boasts unique features like a denoising autoencoder in its pretraining objective, which is adept at reconstructing corrupted input text. This makes it suitable for our extractive approach, utilizing sentences from disparate article sections. 
 
-2. **Clinical Longformer Enhancement** [@li2022clinicallongformer]: Our goal is to augment the Clinical Longformer's maximum token capacity by employing advanced hardware resources. This would facilitate experimentation with larger input dimensions and model training, potentially leading to superior summarization performance and more precise lay summaries.
+**Clinical Longformer Enhancement** [@li2022clinicallongformer]: Our goal is to augment the Clinical Longformer's maximum token capacity by employing advanced hardware resources. This would facilitate experimentation with larger input dimensions and model training, potentially leading to superior summarization performance and more precise lay summaries.
 
-3. **Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarization pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. 
-   This can be achieved by the combination of the RNPTC metric [@luo] and the factual accuracy [@zhang-etal-2020-optimizing] into a single reward function, optimised via the Reinforce algorithm [@williams1992simple].  
-   This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more correct with respect to the input article.
+**Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarization pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. 
+This can be achieved by the combination of the RNPTC metric [@luo] and the factual accuracy [@zhang-etal-2020-optimizing] into a single reward function, optimised via the Reinforce algorithm [@williams1992simple]. This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more correct with respect to the input article.
 
 ## Conclusion {#sec:conclusion}
 
