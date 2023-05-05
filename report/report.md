@@ -157,6 +157,8 @@ Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopt
 In the evaluation phase, we compared the performance of the GPT-2 Abstractor against the Clinical Longformer Abstractor, as well as other summarization models. The results indicate that both models have their strengths and weaknesses, which we will discuss in further detail in the following sections.
 
 # Evaluation {#sec:evaluation}
+In this section, we evaluate the performance of the summarization models described in Section \ref{sec:methods}.
+# Quantitative Evaluation {#sec:evaluation-quantitative}
 
 \begin{table}[htbp]
     \centering
@@ -200,6 +202,8 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
     \caption{Readability metrics. \\ FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
 \end{table}
 
+# Qualitative Evaluation {#sec:evaluation-qualitative}
+
 # Discussion and Conclusion {#sec:discussion-conclusion}
 ## Limitations {#sec:limitations}
 We identify the following limitations of our work:
@@ -224,7 +228,10 @@ In light of the limitations discussed, we propose multiple venues for future wor
 
 2. **Clinical Longformer Enhancement** [@li2022clinicallongformer]: Our goal is to augment the Clinical Longformer's maximum token capacity by employing advanced hardware resources. This would facilitate experimentation with larger input dimensions and model training, potentially leading to superior summarization performance and more precise lay summaries.
 
-3. **Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarization pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more factually correct.
+3. **Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarization pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. 
+   This can be achieved by the combination of the RNPTC metric [@luo] and the factual accuracy [@zhang-etal-2020-optimizing] into a single reward function, optimised via the Reinforce algorithm [@williams1992simple].  
+   This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more correct with respect to the input article.
+
 ## Conclusion {#sec:conclusion}
 
 # Bibliography
