@@ -28,7 +28,6 @@ abstract: |
 ---
 
 # Introduction {#sec:introduction}
-
 Comprehending biomedical scientific publications can be difficult for non-experts, potentially leading to misinformed health decisions [@islam]. Lay summaries, simplified explanations of complex scientific content, could be a solution, but they are not always available. Despite past challenges in applying Automatic Text Summarisation (ATS) to biomedicine due to insufficient data [@chandrasekaran], two new datasets, PLOS and eLife, offer an opportunity to bridge this gap [@goldsack]. This study investigates ATS techniques for generating biomedical lay summaries using these datasets.
 
 # Methods and Datasets {#sec:methods}
@@ -163,6 +162,12 @@ In this section, we evaluate the performance of the summarization models describ
 
 # Quantitative Evaluation {#sec:evaluation-quantitative}
 
+We compare our models by calculating the average F1 ROUGE scores on the evaluation PLOS dataset.
+From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as good as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
+On the other hand, we observe that the metrics decrease for the generative models due to their abstractive nature, 
+which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
+Nevertheless, it is clear that the Clinical Longformer outperforms considerably the GPT-2 perhaps due to the fact the latter is pre-trained on out-of-domain data.
+
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|c|}
@@ -182,6 +187,8 @@ In this section, we evaluate the performance of the summarization models describ
     \end{tabular}
     \caption{ROUGE F1 Scores.}\label{tab:dataset_stats}
 \end{table}
+
+
 
 \begin{table}[htbp]
     \centering
@@ -205,11 +212,10 @@ In this section, we evaluate the performance of the summarization models describ
     \caption{Readability metrics. \\ FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
 \end{table}
 
+
 # Qualitative Evaluation {#sec:evaluation-qualitative}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
-
-In this section, we discuss the performance of the proposed ATS approaches, their implications, and potential future research directions in the biomedical domain.
 
 ## Limitations {#sec:limitations}
 We identify the following limitations of our work:
