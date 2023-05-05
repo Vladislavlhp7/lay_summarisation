@@ -223,7 +223,7 @@ Our qualitative evaluation revealed that extractive summarization often encounte
 Conversely, the GPT model exhibited significant variability in its results. It frequently misinterpreted clinical terms, hallucinated summaries with incorrect or fabricated information, and was fixated on specific characters, tables, and mathematical symbols rather than the core content. While the GPT model achieved higher readability metrics by employing simpler terms, the summaries were often nonsensical and difficult to understand.
 
 
-# Discussion and Conclusion {#sec:discussion-conclusion}
+# Discussion {#sec:discussion-conclusion}
 
 In this section, we discuss the performance of the proposed ATS approaches, their implications, and potential future research directions in the biomedical domain.
 
