@@ -218,6 +218,11 @@ On the other hand, the GPT-2 and Longformer
 
 ## Qualitative Evaluation {#sec:evaluation-qualitative}
 
+Our qualitative evaluation revealed that extractive summarization often encounters a dangling anaphora problem, which can lead to confusion. However, we observed that the Longformer could generate coherent summaries that matched the original content. Despite this, as the Longformer-produced summaries progressed, they tended to drift away from the lay summary's intent and exhibited repetitive information leading to lengthy summaries
+
+Conversely, the GPT model exhibited significant variability in its results. It frequently misinterpreted clinical terms, hallucinated summaries with incorrect or fabricated information, and was fixated on specific characters, tables, and mathematical symbols rather than the core content. While the GPT model achieved higher readability metrics by employing simpler terms, the summaries were often nonsensical and difficult to understand.
+
+
 # Discussion and Conclusion {#sec:discussion-conclusion}
 
 In this section, we discuss the performance of the proposed ATS approaches, their implications, and potential future research directions in the biomedical domain.
