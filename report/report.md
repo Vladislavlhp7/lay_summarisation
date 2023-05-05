@@ -192,7 +192,11 @@ Furthermore, we also note insignificant differences in ROUGE between the top-10 
 
 Regarding the readability of the generated summaries, it is clear and expected that our Extracted summary results in a 
 low FKGL [@Kincaid1975DerivationON] and a high ARI [@senter1967automated] - meaning that it contains a lot of scientific jargon and is hard to read.
-On the other hand, the GPT-2 and Longformer 
+On the other hand, the GPT-2 and Longformer successfully manage to transform the extracted output into a more lay language with significant improvements in readability.
+Surprisingly, the top-10 strategy of the Clinical Longformer results in better lay summarisation than the top-15 one.
+We argue that this is caused by the smaller number of highly-technical and unrelated extracted sentences (top-10) that the model has to deal with.
+We remind the reader that in the provided dataset, 15 sentences amounts to the maximum number of tokens that can be fed 
+to the Longformer model - $1,024$ (due to computational limitations).  
 
 \begin{table}[htbp]
     \centering
