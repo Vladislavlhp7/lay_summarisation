@@ -161,7 +161,7 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
 
 In this section, we evaluate the performance of the summarization models described in Section \ref{sec:methods}.
 
-# Quantitative Evaluation {#sec:evaluation-quantitative}
+## Quantitative Evaluation {#sec:evaluation-quantitative}
 
 \begin{table}[htbp]
     \centering
@@ -205,7 +205,7 @@ In this section, we evaluate the performance of the summarization models describ
     \caption{Readability metrics. \\ FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
 \end{table}
 
-# Qualitative Evaluation {#sec:evaluation-qualitative}
+## Qualitative Evaluation {#sec:evaluation-qualitative}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
 
