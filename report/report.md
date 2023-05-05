@@ -19,7 +19,7 @@ geometry:
     - left=15mm
     - right=15mm
 abstract: |
-    In this study, we present an extractive-abstractive lay summarization pipeline for biomedical papers aimed at generating accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing both lay summaries and full articles. We employ a BERT-based classifier for identifying the most important sentences within each article. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric, along with readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
+    In this project, we present an extractive-abstractive lay summarization pipeline for biomedical papers aimed at generating accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing both lay summaries and full articles. We employ a BERT-based classifier for identifying the most important sentences within each article. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric, along with readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
     We find that a ROUGE-maximizing extractive summarization approach is effective for generating extractive summaries, with the Clinical-Longformer model achieving the best results for combined ROUGE and readability scores.
     Our approach demonstrates the potential for generating lay-friendly summaries of biomedical papers, bridging the gap between expert knowledge and public understanding.
 ---
@@ -69,7 +69,7 @@ The datasets (Tables \ref{tab:dataset_stats_1} and \ref{tab:dataset_stats_2}) co
 
 ## Extractor Network {#sec:extractor-network}
 
-Due to the extreme length of medical articles (e.g., eLife has an average of 600 sentences per article), 
+Due to the extreme length of medical articles (e.g., eLife has an average of $600$ sentences per article), 
 it is not feasible to pass them directly as input to the abstractive models due to their limited maximum input size:
 
 i. **GPT-2** [@radford2019language]: $1,024$ tokens, and
@@ -90,8 +90,8 @@ ii. We further resolve the class imbalance problem by random under-sampling the 
           to match the number of samples in the minority class (i.e., $1$);
 
 Our final extractive dataset consists of $944,234$ sentences with a completely balanced class distribution.
-Data is further split into $80%$-training, $10%$-validation and $10%$-testing datasets in a random stratified manner.
-We then fine-tune the extractive model with a batch size of $32$ and a learning rate of $2e-5$ following the guidance from 
+Data is further split into $80\%$-training, $10\%$-validation and $10\%$-testing datasets in a random stratified manner.
+We then fine-tune the extractive model with a batch size of $32$ and a learning rate of $2 \times 10^{-5}$ following the guidance from 
 BERT's authors [@Devlin2019BERTPO] and find that the model starts to over-fit beyond $2$ epochs 
 (see Figures \ref{fig:extractor-eval-f1} and \ref{fig:extractor-eval-loss}).
 We also report high F1 scores of $0.767$ and $0.765$ on the validation and test sets, respectively.
@@ -146,7 +146,7 @@ resulting in an evaluation loss of $3.4$ (Figure \ref{fig:abstractor-eval-loss})
 
 The GPT-2 is an autoregressive language model that was trained using a casual language modeling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarization task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
 
-Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and 512 tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
+Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and $512$ tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
 
 \begin{figure}
     \centering
