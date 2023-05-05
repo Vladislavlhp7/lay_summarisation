@@ -131,12 +131,12 @@
 \def\addcontentsline#1#2#3{}
 
 \ifacl@finalcopy
-    \thispagestyle{empty}        
-    \pagestyle{empty}
+    % \thispagestyle{empty}        
+    % \pagestyle{empty}
 \else
     \pagenumbering{arabic}
 \fi
-
+\pagenumbering{arabic}
 %% Title and Authors %%
 
 \newcommand{\Thanks}[1]{\thanks{\ #1}}
@@ -164,7 +164,7 @@
 \def\@maketitle{\vbox to \titlebox{\hsize\textwidth
  \linewidth\hsize \vskip 0.125in minus 0.125in \centering
  {\Large\bf \@title \par} \vskip 0.2in plus 1fil minus 0.1in
- {\def\and{\unskip\enspace{\rm and}\enspace}%
+ {\def\and{\unskip\enspace{\rm \ }\enspace}%
   \def\And{\end{tabular}\hss \egroup \hskip 1in plus 2fil 
            \hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\bf}%
   \def\AND{\end{tabular}\hss\egroup \hfil\hfil\egroup
