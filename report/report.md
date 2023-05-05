@@ -164,11 +164,11 @@ In this section, we evaluate the performance of the summarization models describ
 ## Quantitative Evaluation {#sec:evaluation-quantitative}
 
 We compare our models by calculating the average F1 ROUGE scores on the PLOS evaluation dataset.
-From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as good as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
+From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as well as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
 On the other hand, we observe that the metrics decrease for the generative models due to their abstractive nature, 
 which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
-Nevertheless, it is clear that the Clinical Longformer outperforms considerably the GPT-2 perhaps due to the fact the latter is pre-trained on out-of-domain data.
-Furthermore, we also note that there are insignificant differences in ROUGE between the top-10 and top-15 strategies of Sentence Extraction (see Section \ref{sec:extractor-network}) for the Clinical Longformer.
+Nevertheless, the Clinical Longformer outperforms the GPT-2, perhaps because the latter is pre-trained on out-of-domain data.
+Furthermore, we also note insignificant differences in ROUGE between the top-10 and top-15 strategies of Sentence Extraction (see Section \ref{sec:extractor-network}) for the Clinical Longformer.
 
 \begin{table}[htbp]
     \centering
