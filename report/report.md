@@ -218,8 +218,6 @@ On the other hand, the GPT-2 and Longformer
 
 ## Qualitative Evaluation {#sec:evaluation-qualitative}
 
-# Qualitative Evaluation {#sec:evaluation-qualitative}
-
 # Discussion and Conclusion {#sec:discussion-conclusion}
 
 In this section, we discuss the performance of the proposed ATS approaches, their implications, and potential future research directions in the biomedical domain.
