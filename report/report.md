@@ -78,11 +78,11 @@ ii. **Clinical-Longformer** [@li2023comparative]: $4,096$ tokens
 To overcome this limitation, we use the BioClinicalBERT [@alsentzer-etal-2019-publicly] model, pre-trained on the MIMIC-III dataset [@Johnson2016MIMICIII],
 to extract the most important sentences from the articles.
 For that purpose, we cast the extraction summarisation problem as supervised binary classification where the input is a sentence $s$ 
-and the output is a binary label indicating whether the sentence should be included in the summary $c$ or not (i.e., 1 and 0, respectively).
+and the output is a binary label indicating whether the sentence should be included in the summary $c$ or not (i.e., $1$ and $0$, respectively).
 Due to the nature of the provided gold summaries (i.e., abstractive and lay), we generate our own sentence-level 
 dataset by applying the ROUGE-maximisation technique [@zmandar-etal-2021-joint;@nallapati2017summarunner] on the gold summaries and the whole articles. 
 More formally, for each gold summary sentence $s_{i}^{k}$, we find the sentence $s_{j}^{k}$ in article $a_{k}$ that maximises the ROUGE-2 score between them.
-We then label $s_{j}^{k}$ as 1 and the rest of the sentences in $a_{k}$ as 0.
+We then label $s_{j}^{k}$ as $1$ and the rest of the sentences in $a_{k}$ as $0$.
 Because the number of sentences in the articles is much larger than the number of sentences in the gold summaries:
 
 i. We base our extractive binary dataset on both eLife and PLOS data to maximise the number of training samples;
@@ -106,9 +106,9 @@ We also report high F1 scores of $0.767$ and $0.765$ on the validation and test 
 \end{figure}
 
 We then use the BioClinicalBERT model to predict the probability of each sentence in the article being _summarising_.
-The top $10$ sentences with the highest probability are selected and concatenated to produce the final extractive summary.
-We arrive at this number after analysing the token distribution and finding that 10 sentences is a reasonable number 
-to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the $10$ sentences and their lay paraphrases).
+The top ten $10$ with the highest probability are selected and concatenated to produce the final extractive summary.
+We arrive at this number after analysing the token distribution and finding that $10$ sentences is a reasonable number 
+to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the ten sentences and their lay paraphrases).
 While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
 extracted text only as an intermediate step fed into the abstractive models which paraphrase it into lay language.
 
@@ -124,6 +124,7 @@ The Clinical Longformer [@li2023comparative] is a transformer-based model that i
 This is achieved by the implementation of a sparse attention mechanism that allows more computationally efficient processing of long-range dependencies.
 We fine-tune the Clinical Longformer as a sequence-to-sequence task on pairs of (a) gold lay summaries and (b) ROUGE-maximising 
 training data described in Section \ref{sec:extractor-network}. 
+
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{charts/token_distribution}
@@ -132,7 +133,7 @@ training data described in Section \ref{sec:extractor-network}.
 
 For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory 
 during training, as this is a common issue with such models [@orzhenovskii-2021-t5].
-We found that a window size of $64$, batch size of $1$, and input size of $1,024$ worked best for our dataset, 
+We found that a window size of $32$, batch size of $1$, and input size of $1,024$ worked best for our dataset, 
 resulting in an evaluation loss of $3.4$ (Figure \ref{fig:abstractor-eval-loss}).
 
 \begin{figure}
@@ -145,7 +146,7 @@ resulting in an evaluation loss of $3.4$ (Figure \ref{fig:abstractor-eval-loss})
 
 The GPT-2 is an autoregressive language model that was trained using a casual language modeling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarization task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
 
-Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating 507 tokens for the article and 512 tokens for the summary, with 5 reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
+Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and 512 tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
 
 \begin{figure}
     \centering
@@ -214,7 +215,7 @@ We identify the following limitations of our work:
    We appreciate that this method would have provided a more thorough evaluation of our models, and we leave it as future work.
 
 2. **Limited input size**: Due to the limited available computational resources (i.e., Tesla V100-SXM2-16GB) we had to restrict 
-   the input size of the Longformer to $1,024$ tokens (i.e., 4 times less than the maximum size). Therefore, we could not make use of
+   the input size of the Longformer to $1,024$ tokens (i.e., $4$ times less than the maximum size). Therefore, we could not make use of
    the full model capabilities in attending to long-range dependencies. This limitation propagates back to our extractor network,
    which produces only enough sentences to fit in the abstractor network. Thus, if we could increase the Longformer's input size, we could
    do the same for the Extractor model.
