@@ -205,10 +205,13 @@ We identify the following limitations of our work:
 
 ## Future Work {#sec:future-work}
 
-1. **Text-to-text (T5) experimentation** [@clinicalt5]:
-In light of the limitations discussed, we propose multiple venues for future work. The first involves training and evaluating the Clinical T5 model as a domain-specific alternative to the Clinical Longformer. The T5 is a transformer-based model with unique advantages, we are specifically interested in the denoising autoencoder present in its pretraining objective which it learns to reconstruct corrupted input text. This would be particularly useful with our extractive model which extracts sentences from disjoint sections of the article. Due to time constraints, we were unable to integrate the Clinical T5 model's inference in the current study. However, future work would perform rigourouss evalutation and comparison to the Clinical Longformer.
-Another primary objective is to expand the Clinical Longformer's maximum token length by leveraging better hardware resources. This would enable us to experiment with larger input sizes and train the model accordingly, potentially leading to better summarization performance and more accurate lay summaries.
-Additionally, we propose integrating readability and factual correctness rewards using reinforcement learning techniques to further enhance the performance of our summarization pipeline. This approach could encourage the model to generate summaries that are not only more readable for non-experts but also more accurate in conveying the content of the original articles. By incorporating these rewards, we hope to strike a better balance between generating lay summaries that are both accessible and factually correct.
+In light of the limitations discussed, we propose multiple venues for future work:
+
+1. **T5 Experimentation** [@clinicalt5]: Our future work aims to train and evaluate the Clinical T5 model as a domain-specific alternative to the Clinical Longformer. The T5, a transformer-based model, possesses unique advantages, such as the denoising autoencoder present in its pretraining objective. This autoencoder learns to reconstruct corrupted input text, making it particularly useful for our extractive model, which extracts sentences from disjoint sections of the article. Due to time constraints, we could not integrate the Clinical T5 model's inference in the current study. However, we plan to rigorously evaluate and compare the model to the Clinical Longformer in future work.
+
+2. **Enhancing the Clinical Longformer**: Another primary objective is to increase the Clinical Longformer's maximum token length by utilizing improved hardware resources. This approach would allow us to experiment with larger input sizes and train the model accordingly, potentially resulting in better summarization performance and more accurate lay summaries.
+
+3. **Incorporating Feedback**: To further enhance our summarization pipeline, we propose integrating readability and factual correctness rewards using reinforcement learning techniques. This strategy aims to encourage the model to generate summaries that are not only more readable for non-experts but also more accurate in conveying the original articles' content. By incorporating these rewards, we hope to achieve a better balance between generating lay summaries that are both accessible and factually correct.
 
 ## Conclusion {#sec:conclusion}
 
