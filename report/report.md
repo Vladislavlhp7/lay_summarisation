@@ -190,9 +190,20 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
 # Discussion and Conclusion {#sec:discussion-conclusion}
 ## Limitations {#sec:limitations}
 We identify the following limitations of our work:
-1. Uncontrollable abstraction [@luo]: <in the working> On one hand, we do not 
-2. Text-to-text (T5) experimentation [@clinicalt5]:
-3. 
+
+1. **Readability Evaluation**: Although, we are evaluating our models with the traditional metrics: FKGL [@flesch1948new], ARI [@ari], and Gunning [@gunning1952technique],
+   they are insufficient for the estimation of text readability in scientific writing. 
+   Instead, what some researchers propose is to leverage masked language models [@martinc_readability] 
+   like the noun-phrase BERT-based metric [@luo] that computes the probability of technical jargon.
+   We appreciate that this method would have provided a more thorough evaluation of our models and we leave it as future work.
+
+2. **Limited input size**: The input size of the Longformer is limited to 1024 tokens. 
+This means that we cannot use the full lay summary as input to the model. We experimented with different input sizes and found that 1024 tokens worked best for our dataset. However, this means that we are not using the full lay summary as input to the model. This is a limitation of the Longformer model and not of our work.
+
+## Future Work {#sec:future-work}
+1. Text-to-text (T5) experimentation [@clinicalt5]:
+
+
 ## Conclusion {#sec:conclusion}
 
 # Bibliography
