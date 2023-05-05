@@ -223,7 +223,7 @@ Our qualitative evaluation revealed that extractive summarisation often encounte
 Conversely, the GPT model exhibited significant variability in its results. It frequently misinterpreted clinical terms, hallucinated summaries with incorrect or fabricated information, and was fixated on specific characters, tables, and mathematical symbols rather than the core content. While the GPT model achieved higher readability metrics by employing simpler terms, the summaries were often nonsensical and difficult to understand.
 
 
-# Discussion and Conclusion {#sec:discussion-conclusion}
+# Discussion {#sec:discussion-conclusion}
 
 In this section, we discuss the performance of the proposed ATS approaches, their implications, and potential future research directions in the biomedical domain.
 
@@ -253,7 +253,7 @@ In light of the limitations discussed, we propose multiple venues for future wor
 **Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarisation pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. 
 This can be achieved by the combination of the RNPTC metric [@luo] and the factual accuracy [@zhang-etal-2020-optimizing] into a single reward function, optimised via the Reinforce algorithm [@williams1992simple]. This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more correct with respect to the input article.
 
-## Conclusion {#sec:conclusion}
+# Conclusion {#sec:conclusion}
 
 Our project presents an effective two-step approach for generating lay summaries of biomedical research articles. We incorporate an extraction step using the BioClinicalBERT model and an abstractive step using either GPT-2 or Clinical Longformer models. 
 

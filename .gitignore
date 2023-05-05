@@ -5,6 +5,7 @@ weights/*
 data/*
 uber.py
 wandb
+report.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
