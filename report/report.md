@@ -40,7 +40,7 @@ The datasets (Tables \ref{tab:dataset_stats_1} and \ref{tab:dataset_stats_2}) co
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{c||c|c}
+    \begin{tabular}{|c|c|c|}
         \hline
         \textbf{Dataset} & \textbf{Training} & \textbf{Validation} \\
         \hline
@@ -54,7 +54,7 @@ The datasets (Tables \ref{tab:dataset_stats_1} and \ref{tab:dataset_stats_2}) co
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{c||c|c}
+    \begin{tabular}{|c|c|c|}
         \hline
         \textbf{Dataset} & \textbf{Avg. Sentences} & \textbf{Avg. Tokens} \\
         \hline
@@ -194,5 +194,13 @@ We identify the following limitations of our work:
 2. Text-to-text (T5) experimentation [@clinicalt5]:
 3. 
 ## Conclusion {#sec:conclusion}
+
+## Future Work
+
+In light of the limitations discussed, we propose multiple venues for future work. The first involves training and evaluating the Clinical T5 model as a domain-specific alternative to the Clinical Longformer. The T5 is a transformer-based model with unique advantages, we are specifically interested in the denoising autoencoder present in its pretraining objective which it learns to reconstruct corrupted input text. This would be particularly useful with our extractive model which extracts sentences from disjoint sections of the article. Due to time constraints, we were unable to integrate the Clinical T5 model's inference in the current study. However, future work would perform rigourouss evalutation and comparison to the Clinical Longformer.
+
+Another primary objective is to expand the Clinical Longformer's maximum token length by leveraging better hardware resources. This would enable us to experiment with larger input sizes and train the model accordingly, potentially leading to better summarization performance and more accurate lay summaries.
+
+Additionally, we propose integrating readability and factual correctness rewards using reinforcement learning techniques to further enhance the performance of our summarization pipeline. This approach could encourage the model to generate summaries that are not only more readable for non-experts but also more accurate in conveying the content of the original articles. By incorporating these rewards, we hope to strike a better balance between generating lay summaries that are both accessible and factually correct.
 
 # Bibliography
