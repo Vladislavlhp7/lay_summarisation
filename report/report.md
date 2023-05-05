@@ -250,7 +250,7 @@ This can be achieved by the combination of the RNPTC metric [@luo] and the factu
 
 ## Conclusion {#sec:conclusion}
 
-Our project presents an effective two-step approach for generating lay summaries of biomedical research articles, incorporating an extraction step using the BioClinicalBERT model and an abstractive step with either the GPT-2 or Clinical Longformer models. 
+Our project presents an effective two-step approach for generating lay summaries of biomedical research articles. We incorporate an extraction step using the BioClinicalBERT model and an abstractive step with either the GPT-2 or Clinical Longformer models. 
 Results indicate that the classifier trained on the ROUGE-maximising dataset performs well in extracting relevant sentences, while the Clinical Longformer Abstractor is able to generate coherent lay summaries, achieving a good balance between ROUGE and readability scores. This suggests that a pipeline approach to lay summarisation is effective at generating lay summaries while reducing computational cost. Alternative Abstractive models and evaluation metrics should be explored to develop more efficient and accurate summarization systems.
 Ultimately, our project contributes to the growing body of research aimed at bridging the gap between specialized biomedical knowledge and the general public, fostering better communication and understanding in the healthcare domain.
 
