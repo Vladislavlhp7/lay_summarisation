@@ -133,7 +133,7 @@ training data described in Section \ref{sec:extractor-network}.
 
 For the Longformer model, we experimented with window, batch, and input size to ensure that we would not run out of memory 
 during training, as this is a common issue with such models [@orzhenovskii-2021-t5].
-We found that a window size of $64$, batch size of $1$, and input size of $1,024$ worked best for our dataset, 
+We found that a window size of $32$, batch size of $1$, and input size of $1,024$ worked best for our dataset, 
 resulting in an evaluation loss of $3.4$ (Figure \ref{fig:abstractor-eval-loss}).
 
 \begin{figure}
