@@ -22,8 +22,8 @@ geometry:
     - left=15mm
     - right=15mm
 abstract: |
-    In this project, we present an extractive-abstractive lay summarization pipeline for biomedical papers aimed at generating accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing both lay summaries and full articles. We employ a BERT-based classifier for identifying the most important sentences within each article. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric, along with readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
-    We find that a ROUGE-maximizing extractive summarization approach is effective for generating extractive summaries, with the Clinical-Longformer model achieving the best results for combined ROUGE and readability scores.
+    In this project, we present an extractive-abstractive lay summarization pipeline for biomedical papers to generate accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing lay summaries and complete articles. We employ a BERT-based classifier to identify each article's most critical sentences. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric and readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
+    We find that a ROUGE-maximizing extractive summarization approach is practical for generating extractive summaries, with the Clinical-Longformer model achieving the best results for combined ROUGE and readability scores.
     Our approach demonstrates the potential for generating lay-friendly summaries of biomedical papers, bridging the gap between expert knowledge and public understanding.
 ---
 
@@ -105,24 +105,23 @@ We also report high F1 scores of $0.767$ and $0.765$ on the validation and test 
     \includegraphics[width=0.5\textwidth]{charts/extractor-eval-loss.png}
     \caption{BioClinicalBERT: Evaluation Loss}\label{fig:extractor-eval-loss}
 \end{figure}
-
 We then use the BioClinicalBERT model to predict the probability of each sentence in the article being _summarising_.
 The top ten $10$ with the highest probability are selected and concatenated to produce the final extractive summary.
 We arrive at this number after analysing the token distribution and finding that $10$ sentences is a reasonable number 
 to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the ten sentences and their lay paraphrases).
 While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
-extracted text only as an intermediate step fed into the abstractive models which paraphrase it into lay language.
+extracted text only as an intermediate step fed into the abstractive models, paraphrasing it into lay language.
 
 ## Abstractive Network {#sec:abstractive-network}
 
 Once the extractive summary is generated, we train the abstractive models on the lay summaries and the extractive summaries. For this, we compare two models: GPT-2 [@radford2019language] and Clinical-Longformer [@li2022clinicallongformer]. 
-We fine tune both models separately on eLife and PLOS. This is done due to the difference in structure and the average number of tokens in the lay summaries between the two datasets (i.e., $450$ and $800$ for PLOS and eLife, respectively).
+We fine-tune both models separately on eLife and PLOS. This is done due to the difference in structure and the average number of tokens in the lay summaries between the two datasets (i.e., $450$ and $800$ for PLOS and eLife, respectively).
 Hyperparameters are set based on widely used values in the literature [@li2022clinicallongformer;@radford2019language;@Devlin2019BERTPO]. 
 
 ### Clinical Longformer Abstractor {#sec:clinical-longformer-abstractor}
 The Clinical Longformer [@li2023comparative] is a transformer-based model that is pre-trained on the MIMIC-III dataset 
 [@Johnson2016MIMICIII] and can process up to $4,096$ tokens in a single input sequence.
-This is achieved by the implementation of a sparse attention mechanism that allows more computationally efficient processing of long-range dependencies.
+This is achieved by implementing a sparse attention mechanism that allows more computationally efficient processing of long-range dependencies.
 We fine-tune the Clinical Longformer as a sequence-to-sequence task on pairs of (a) gold lay summaries and (b) ROUGE-maximising 
 training data described in Section \ref{sec:extractor-network}. 
 
@@ -145,9 +144,9 @@ resulting in an evaluation loss of $3.4$ (Figure \ref{fig:abstractor-eval-loss})
 
 ### GPT-2 Abstractor {#sec:gpt2-abstractor}
 
-The GPT-2 is an autoregressive language model that was trained using a casual language modeling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarization task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
+The GPT-2 is an autoregressive language model that was trained using a casual language modelling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarization task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
 
-Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance [@bajaj-etal-2021-long]. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and $512$ tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
+Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance [@bajaj-etal-2021-long]. Since GPT-2 can accommodate 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and $512$ tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results regarding summary quality and model performance. Figure \ref{fig:gpt-eval} illustrates the evaluation loss decrease during the fine-tuning process.
 
 \begin{figure}
     \centering
@@ -230,11 +229,11 @@ do the same for the Extractor model.
 
 In light of the limitations discussed, we propose multiple venues for future work:
 
-**T5 Experimentation** [@clinicalt5]: We aim to develop and assess the Clinical T5 model as a specialized counterpart to the Clinical Longformer. The T5, a transformer-based model, boasts unique features like a denoising autoencoder in its pretraining objective, which is adept at reconstructing corrupted input text. This makes it suitable for our extractive approach, utilizing sentences from disparate article sections. 
+**T5 Experimentation** [@clinicalt5]: We aim to develop and assess the Clinical T5 model as a specialized counterpart to the Clinical Longformer. The T5, a transformer-based model, boasts unique features like a denoising autoencoder in its pretraining objective, which is adept at reconstructing corrupted input text. This makes it suitable for our extractive approach, utilising sentences from disparate article sections. 
 
-**Clinical Longformer Enhancement** [@li2022clinicallongformer]: Our goal is to augment the Clinical Longformer's maximum token capacity by employing advanced hardware resources. This would facilitate experimentation with larger input dimensions and model training, potentially leading to superior summarization performance and more precise lay summaries.
+**Clinical Longformer Enhancement** [@li2022clinicallongformer]: Our goal is to augment the Clinical Longformer's maximum token capacity by employing advanced hardware resources. This would facilitate experimentation with larger input dimensions and model training, potentially leading to superior summarisation performance and more precise lay summaries.
 
-**Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarization pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. 
+**Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarisation pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. 
 This can be achieved by the combination of the RNPTC metric [@luo] and the factual accuracy [@zhang-etal-2020-optimizing] into a single reward function, optimised via the Reinforce algorithm [@williams1992simple]. This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more correct with respect to the input article.
 
 ## Conclusion {#sec:conclusion}
