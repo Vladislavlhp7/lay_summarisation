@@ -161,7 +161,7 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
 
 In this section, we evaluate the performance of the summarization models described in Section \ref{sec:methods}.
 
-# Quantitative Evaluation {#sec:evaluation-quantitative}
+## Quantitative Evaluation {#sec:evaluation-quantitative}
 
 We compare our models by calculating the average F1 ROUGE scores on the PLOS evaluation dataset.
 From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as good as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
