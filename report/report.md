@@ -31,8 +31,11 @@ A possible remedy for this situation is to provide lay summaries, i.e., summarie
 Prior research on Automatic Text Summarisation (ATS) has neglected the biomedical domain owing to the absence of data [@chandrasekaran]; 
 however, two recently introduced datasets (PLOS and eLife) have emerged to tackle this issue [@goldsack].
 
+Comprehending biomedical scientific publications can be difficult for non-experts, potentially leading to misinformed health decisions [@islam]. Lay summaries, simplified explanations of complex scientific content, could be a solution, but they are not always available. Despite past challenges in applying Automatic Text Summarisation (ATS) to biomedicine due to insufficient data [@chandrasekaran], two new datasets, PLOS and eLife, offer an opportunity to bridge this gap [@goldsack]. This study investigates ATS techniques for generating biomedical lay summaries using these datasets.
 
 # Methods and Datasets {#sec:methods}
+
+In this section outline the various ATS methodologies employed in this study and describe the PLOS and eLife datasets used for training and evaluation purposes.
 
 ## Dataset {#sec:dataset}
 
@@ -146,7 +149,7 @@ resulting in an evaluation loss of $3.4$ (Figure \ref{fig:abstractor-eval-loss})
 
 The GPT-2 is an autoregressive language model that was trained using a casual language modeling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarization task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
 
-Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and $512$ tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
+Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance [@bajaj-etal-2021-long]. Since GPT-2 can accommodate a total of 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and $512$ tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results in terms of summary quality and model performance. The evaluation loss decrease during the fine-tuning process is illustrated in Figure \ref{fig:gpt-eval}.
 
 \begin{figure}
     \centering
