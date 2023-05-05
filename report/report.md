@@ -159,7 +159,7 @@ In this section, we evaluate the performance of the summarization models describ
 
 # Quantitative Evaluation {#sec:evaluation-quantitative}
 
-We compare our models by calculating the average F1 ROUGE scores on the evaluation PLOS dataset.
+We compare our models by calculating the average F1 ROUGE scores on the PLOS evaluation dataset.
 From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as good as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
 On the other hand, we observe that the metrics decrease for the generative models due to their abstractive nature, 
 which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
@@ -186,7 +186,9 @@ Furthermore, we also note that there are insignificant differences in ROUGE betw
     \caption{ROUGE F1 Scores.}\label{tab:dataset_stats}
 \end{table}
 
-
+Regarding the readability of the generated summaries, it is clear and expected that our Extracted summary results in a 
+low FKGL [@Kincaid1975DerivationON] and a high ARI [@senter1967automated] - meaning that it contains a lot of scientific jargon and is hard to read.
+On the other hand, the GPT-2 and Longformer 
 
 \begin{table}[htbp]
     \centering
