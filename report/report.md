@@ -22,8 +22,8 @@ geometry:
     - left=15mm
     - right=15mm
 abstract: |
-    In this project, we present an extractive-abstractive lay summarization pipeline for biomedical papers to generate accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing lay summaries and complete articles. We employ a BERT-based classifier to identify each article's most critical sentences. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric and readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
-    We find that a ROUGE-maximizing extractive summarization approach is practical for generating extractive summaries, with the Clinical-Longformer model achieving the best results for combined ROUGE and readability scores.
+    In this project, we present an extractive-abstractive lay summarisation pipeline for biomedical papers to generate accessible summaries for non-experts. To achieve this, we construct a sentence-level dataset optimized for maximizing ROUGE scores, utilizing lay summaries and complete articles. We employ a BERT-based classifier to identify each article's most critical sentences. The extracted summaries are then input into two abstractive models, Clinical-Longformer and GPT-2, which paraphrase the summaries to enhance readability. We evaluate the performance of our models using the ROUGE metric and readability metrics such as Flesch-Kincaid Grade Level (FKGL), Gunning Fog Score, and Automated Readability Index (ARI). 
+    We find that a ROUGE-maximizing extractive summarisation approach is practical for generating extractive summaries, with the Clinical-Longformer model achieving the best results for combined ROUGE and readability scores.
     Our approach demonstrates the potential for generating lay-friendly summaries of biomedical papers, bridging the gap between expert knowledge and public understanding.
 ---
 
@@ -110,7 +110,7 @@ The top $10$ with the highest probability are selected and concatenated to produ
 We arrive at this number after analysing the token distribution and finding that $10$ sentences is a reasonable number 
 to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the ten sentences and their lay paraphrases).
 We also experiment with a top-$15$ strategy only for the Clinical Longformer to fully make use of the sparse attention mechanism (see Section \ref{sec:evaluation-quantitative}).
-While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
+While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarisation], we use the 
 extracted text only as an intermediate step fed into the abstractive models, paraphrasing it into lay language.
 
 ## Abstractive Network {#sec:abstractive-network}
@@ -145,7 +145,7 @@ resulting in an evaluation loss of $3.4$ (Figure \ref{fig:abstractor-eval-loss})
 
 ### GPT-2 Abstractor {#sec:gpt2-abstractor}
 
-The GPT-2 is an autoregressive language model that was trained using a casual language modelling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarization task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
+The GPT-2 is an autoregressive language model that was trained using a casual language modelling objective [@radford_wu]. Given its extensive exposure to diverse text sources and natural language patterns, we hypothesize that GPT-2 would be particularly adept at generating lay summaries, making it a promising candidate for the abstractive summarisation task. To fine-tune GPT-2 for this purpose, we utilize a "TL;DR" prompt, instructing the model to generate concise and informative summaries.
 
 Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopting most hyperparameters from the existing literature to ensure optimal performance [@bajaj-etal-2021-long]. Since GPT-2 can accommodate 1024 tokens, we experimented with various splits between the number of tokens allocated for the extracted summary and the lay summary. Through experimentation, we determined that allocating $507$ tokens for the article and $512$ tokens for the summary, with $5$ reserved for the "TL;DR" prompt, yielded the best results regarding summary quality and model performance. Figure \ref{fig:gpt-eval} illustrates the evaluation loss decrease during the fine-tuning process.
 
@@ -155,11 +155,11 @@ Similar to the Longformer, we train GPT-2 on both eLife and PLOS datasets, adopt
     \caption{GPT 2 Evaluation Loss}\label{fig:gpt-eval}
 \end{figure}
 
-In the evaluation phase, we compared the performance of the GPT-2 Abstractor against the Clinical Longformer Abstractor, as well as other summarization models. The results indicate that both models have their strengths and weaknesses, which we will discuss in further detail in the following sections.
+In the evaluation phase, we compared the performance of the GPT-2 Abstractor against the Clinical Longformer Abstractor, as well as other summarisation models. The results indicate that both models have their strengths and weaknesses, which we will discuss in further detail in the following sections.
 
 # Evaluation {#sec:evaluation}
 
-In this section, we evaluate the performance of the summarization models described in Section \ref{sec:methods}.
+In this section, we evaluate the performance of the summarisation models described in Section \ref{sec:methods}.
 
 ## Quantitative Evaluation {#sec:evaluation-quantitative}
 
@@ -222,12 +222,12 @@ to the Longformer model - $1,024$ (due to computational limitations).
 
 ## Qualitative Evaluation {#sec:evaluation-qualitative}
 
-Our qualitative evaluation revealed that extractive summarization often encounters a dangling anaphora problem, which can lead to confusion. However, we observed that the Longformer could generate coherent summaries that matched the original content. Despite this, as the Longformer-produced summaries progressed, they tended to drift away from the lay summary's intent and exhibited repetitive information leading to lengthy summaries
+Our qualitative evaluation revealed that extractive summarisation often encounters a dangling anaphora problem, which can lead to confusion. However, we observed that the Longformer could generate coherent summaries that matched the original content. Despite this, as the Longformer-produced summaries progressed, they tended to drift away from the lay summary's intent and exhibited repetitive information leading to lengthy summaries
 
 Conversely, the GPT model exhibited significant variability in its results. It frequently misinterpreted clinical terms, hallucinated summaries with incorrect or fabricated information, and was fixated on specific characters, tables, and mathematical symbols rather than the core content. While the GPT model achieved higher readability metrics by employing simpler terms, the summaries were often nonsensical and difficult to understand.
 
 
-# Discussion and Conclusion {#sec:discussion-conclusion}
+# Discussion {#sec:discussion-conclusion}
 
 In this section, we discuss the performance of the proposed ATS approaches, their implications, and potential future research directions in the biomedical domain.
 
@@ -257,9 +257,10 @@ In light of the limitations discussed, we propose multiple venues for future wor
 **Feedback Integration**: We suggest incorporating readability and factual correctness rewards into our summarisation pipeline using reinforcement learning methods [@scialom-etal-2019-answers]. 
 This can be achieved by the combination of the RNPTC metric [@luo] and the factual accuracy [@zhang-etal-2020-optimizing] into a single reward function, optimised via the Reinforce algorithm [@williams1992simple]. This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more correct with respect to the input article.
 
-## Conclusion {#sec:conclusion}
+# Conclusion {#sec:conclusion}
 
-Our project presents an effective two-step approach for generating lay summaries of biomedical research articles. We incorporate an extraction step using the BioClinicalBERT model and an abstractive step with either the GPT-2 or Clinical Longformer models. 
-Results indicate that the classifier trained on the ROUGE-maximising dataset performs well in extracting relevant sentences, while the Clinical Longformer Abstractor is able to generate coherent lay summaries, achieving a good balance between ROUGE and readability scores. This suggests that a pipeline approach to lay summarisation is effective at generating lay summaries while reducing computational cost. Alternative Abstractive models and evaluation metrics should be explored to develop more efficient and accurate summarization systems.
+Our project presents an effective two-step approach for generating lay summaries of biomedical research articles. We incorporate an extraction step using the BioClinicalBERT model and an abstractive step using either GPT-2 or Clinical Longformer models. 
+
+Results indicate that the classifier trained on the ROUGE-maximising dataset performs well in extracting relevant sentences. At the same time, the Clinical Longformer Abstractor can generate coherent lay summaries, achieving a good balance between ROUGE and readability scores. This suggests that an extractive abstractive approach to lay summarisation effectively generates lay summaries while reducing computational costs.
 
 # Bibliography
