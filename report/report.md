@@ -162,16 +162,18 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
         \hline
         \textbf{Model} & \textbf{Rouge1} & \textbf{Rouge2} & \textbf{RougeL} \\
         \hline
-            Lexrank & $0.334$ & $0.085$ & $0.164$ \\
+            Lexrank & $0.34$ & $0.09$ & $0.16$ \\
         \hline
-            Extractive & $0.329$ & $0.0998$ & $0.163$ \\
+            Extractive & $0.33$ & $0.10$ & $0.16$ \\
         \hline
-            GPT2 & $0$ & $0$ & $0$ \\
+            GPT2 & $0.18$ & $0.02$ & $0.09$ \\
         \hline
-            Longformer & $0.289$ & $0.062$ & $0.143$ \\
+            Longformer (top-15 sents) & $0.28$ & $0.07$ & $0.15$ \\
+        \hline
+            Longformer (top-10 sents) & $0.29$ & $0.06$ & $0.14$ \\
         \hline
     \end{tabular}
-    \caption{ROUGE metrics.}\label{tab:dataset_stats}
+    \caption{ROUGE F1 Scores.}\label{tab:dataset_stats}
 \end{table*}
 
 \begin{table*}[htbp]
@@ -193,7 +195,7 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
             Longformer (top-10 sents) & $27.33$ & $16.89$ & $18.44$ \\
         \hline
     \end{tabular}
-    \caption{Readability metrics. FKGL - higher is better, ARI - lower is better, Gunning - lower is better}\label{tab:dataset_stats}
+    \caption{Readability metrics. \\\hspace{\textwidth} FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
 \end{table*}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
