@@ -110,7 +110,7 @@ The top $10$ with the highest probability are selected and concatenated to produ
 We arrive at this number after analysing the token distribution and finding that $10$ sentences is a reasonable number 
 to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the ten sentences and their lay paraphrases).
 We also experiment with a top-$15$ strategy only for the Clinical Longformer to fully make use of the sparse attention mechanism (see Section \ref{sec:evaluation-quantitative}).
-While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarisation], we use the 
+While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
 extracted text only as an intermediate step fed into the abstractive models, paraphrasing it into lay language.
 
 ## Abstractive Network {#sec:abstractive-network}
