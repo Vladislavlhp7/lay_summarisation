@@ -131,12 +131,12 @@
 \def\addcontentsline#1#2#3{}
 
 \ifacl@finalcopy
-    \thispagestyle{empty}        
-    \pagestyle{empty}
+    % \thispagestyle{empty}        
+    % \pagestyle{empty}
 \else
     \pagenumbering{arabic}
 \fi
-
+\pagenumbering{arabic}
 %% Title and Authors %%
 
 \newcommand{\Thanks}[1]{\thanks{\ #1}}

@@ -17,8 +17,8 @@ header-includes:
   - \setcounter{secnumdepth}{5}
 graphics: yes
 geometry:
-    - top=15mm
-    - bottom=15mm
+    - top=20mm
+    - bottom=20mm
     - left=15mm
     - right=15mm
 abstract: |
