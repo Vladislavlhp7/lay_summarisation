@@ -215,17 +215,17 @@ In this section, we discuss the performance of the proposed ATS approaches, thei
 ## Limitations {#sec:limitations}
 We identify the following limitations of our work:
 
-1. **Readability Evaluation**: Although, we are evaluating our models with the traditional metrics: FKGL [@Kincaid1975DerivationON], ARI [@senter1967automated], and Gunning [@gunning1952technique],
-   they are insufficient for the estimation of text readability in scientific writing. 
-   Instead, what some researchers propose is to leverage masked language models [@martinc_readability] 
-   like the noun-phrase BERT-based metric [@luo] that computes the probability of technical jargon.
-   We appreciate that this method would have provided a more thorough evaluation of our models, and we leave it as future work.
+**Readability Evaluation**: Although, we are evaluating our models with the traditional metrics: FKGL [@Kincaid1975DerivationON], ARI [@senter1967automated], and Gunning [@gunning1952technique],
+they are insufficient for the estimation of text readability in scientific writing. 
+Instead, what some researchers propose is to leverage masked language models [@martinc_readability] 
+like the noun-phrase BERT-based metric [@luo] that computes the probability of technical jargon.
+We appreciate that this method would have provided a more thorough evaluation of our models, and we leave it as future work.
 
-2. **Limited input size**: Due to the limited available computational resources (i.e., Tesla V100-SXM2-16GB), we had to restrict 
-   the input size of the Longformer to $1,024$ tokens (i.e., $4$ times less than the maximum size). Therefore, we could not use
-   the full model capabilities in attending to long-range dependencies. This limitation propagates back to our extractor network,
-   which produces only enough sentences to fit in the abstractor network. Thus, if we could increase the Longformer's input size, we could
-   do the same for the Extractor model.
+**Limited input size**: Due to the limited available computational resources (i.e., Tesla V100-SXM2-16GB) we had to restrict 
+the input size of the Longformer to $1,024$ tokens (i.e., $4$ times less than the maximum size). Therefore, we could not make use of
+the full model capabilities in attending to long-range dependencies. This limitation propagates back to our extractor network,
+which produces only enough sentences to fit in the abstractor network. Thus, if we could increase the Longformer's input size, we could
+do the same for the Extractor model.
 
 ## Future Work {#sec:future-work}
 
@@ -239,5 +239,10 @@ In light of the limitations discussed, we propose multiple venues for future wor
 This can be achieved by the combination of the RNPTC metric [@luo] and the factual accuracy [@zhang-etal-2020-optimizing] into a single reward function, optimised via the Reinforce algorithm [@williams1992simple]. This approach aspires to promote the generation of summaries that are not only more comprehensible for non-experts but also more correct with respect to the input article.
 
 ## Conclusion {#sec:conclusion}
+
+This project presents an effective two-step approach for generating lay summaries of biomedical research articles, incorporating an extraction step using the BioClinicalBERT model and an abstractive step with either the GPT-2 or Clinical Longformer models. By comparing the performance of these models on the PLOS dataset, we demonstrate the strengths and weaknesses of each model, finding that **TODO...**
+
+Our results indicate that the GPT-2 Abstractor generally achieves higher ROUGE-2 F1 scores, while the Clinical Longformer Abstractor excels in ROUGE-1 and ROUGE-L F1 scores. This suggests that both models have unique advantages and can be further explored to develop more efficient and accurate summarization systems
+Ultimately, our study contributes to the growing body of research aimed at bridging the gap between specialized biomedical knowledge and the general public, fostering better communication and understanding in the healthcare domain.
 
 # Bibliography
