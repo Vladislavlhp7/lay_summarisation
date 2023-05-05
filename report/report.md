@@ -69,7 +69,7 @@ The datasets (Tables \ref{tab:dataset_stats_1} and \ref{tab:dataset_stats_2}) co
 
 ## Extractor Network {#sec:extractor-network}
 
-Due to the extreme length of medical articles (e.g., eLife has an average of 600 sentences per article), 
+Due to the extreme length of medical articles (e.g., eLife has an average of $600$ sentences per article), 
 it is not feasible to pass them directly as input to the abstractive models due to their limited maximum input size:
 
 i. **GPT-2** [@radford2019language]: $1,024$ tokens, and
@@ -90,8 +90,8 @@ ii. We further resolve the class imbalance problem by random under-sampling the 
           to match the number of samples in the minority class (i.e., $1$);
 
 Our final extractive dataset consists of $944,234$ sentences with a completely balanced class distribution.
-Data is further split into $80%$-training, $10%$-validation and $10%$-testing datasets in a random stratified manner.
-We then fine-tune the extractive model with a batch size of $32$ and a learning rate of $2e-5$ following the guidance from 
+Data is further split into $80\%$-training, $10\%$-validation and $10\%$-testing datasets in a random stratified manner.
+We then fine-tune the extractive model with a batch size of $32$ and a learning rate of $2 \times 10^{-5}$ following the guidance from 
 BERT's authors [@Devlin2019BERTPO] and find that the model starts to over-fit beyond $2$ epochs 
 (see Figures \ref{fig:extractor-eval-f1} and \ref{fig:extractor-eval-loss}).
 We also report high F1 scores of $0.767$ and $0.765$ on the validation and test sets, respectively.
