@@ -25,12 +25,6 @@ abstract: |
 ---
 
 # Introduction {#sec:introduction}
-It can be challenging for individuals without expertise to comprehend scientific publications, particularly in biomedicine, 
-where inaccuracies can directly impact health decisions [@islam].
-A possible remedy for this situation is to provide lay summaries, i.e., summaries in simpler terms, which are currently uncommon. 
-Prior research on Automatic Text Summarisation (ATS) has neglected the biomedical domain owing to the absence of data [@chandrasekaran]; 
-however, two recently introduced datasets (PLOS and eLife) have emerged to tackle this issue [@goldsack].
-
 Comprehending biomedical scientific publications can be difficult for non-experts, potentially leading to misinformed health decisions [@islam]. Lay summaries, simplified explanations of complex scientific content, could be a solution, but they are not always available. Despite past challenges in applying Automatic Text Summarisation (ATS) to biomedicine due to insufficient data [@chandrasekaran], two new datasets, PLOS and eLife, offer an opportunity to bridge this gap [@goldsack]. This study investigates ATS techniques for generating biomedical lay summaries using these datasets.
 
 # Methods and Datasets {#sec:methods}
@@ -170,7 +164,6 @@ On the other hand, we observe that the metrics decrease for the generative model
 which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
 Nevertheless, it is clear that the Clinical Longformer outperforms considerably the GPT-2 perhaps due to the fact the latter is pre-trained on out-of-domain data.
 
-
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|c|}
@@ -190,6 +183,8 @@ Nevertheless, it is clear that the Clinical Longformer outperforms considerably 
     \end{tabular}
     \caption{ROUGE F1 Scores.}\label{tab:dataset_stats}
 \end{table}
+
+
 
 \begin{table}[htbp]
     \centering
