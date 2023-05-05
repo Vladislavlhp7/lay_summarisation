@@ -180,13 +180,17 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
         \hline
         \textbf{Model} & \textbf{FKGL} & \textbf{ARI} & \textbf{Gunning} \\
         \hline
-            Lexrank & $33.59$ & $15.41$ & $18.50$ \\
+            Lay & 20.01 & 16.50 & 19.11 \\
         \hline
-            Extractive & $10.6$ & $25.01$  & $26.22$ \\
+            Lex (Baseline) & 33.58 & 15.41 & 18.50 \\
         \hline
-            GPT2 & $0$ & $0$ & $0$ \\
+            Extractive & 10.60 & 25.01 & 26.22 \\
         \hline
-            Longformer & $27.33$ & $16.89$ & $18.44$ \\
+            GPT2 & 30.68 & 21.36 & 23.26 \\
+        \hline
+            Longformer (top-15 sents) & 23.84 & 19.62 & 20.62 \\
+        \hline
+            Longformer (top-10 sents) & $27.33$ & $16.89$ & $18.44$ \\
         \hline
     \end{tabular}
     \caption{Readability metrics. FKGL - higher is better, ARI - lower is better, Gunning - lower is better}\label{tab:dataset_stats}
