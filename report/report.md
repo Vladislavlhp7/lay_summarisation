@@ -168,9 +168,9 @@ In this section, we evaluate the performance of the summarization models describ
         \hline
         \textbf{Model} & \textbf{Rouge1} & \textbf{Rouge2} & \textbf{RougeL} \\
         \hline
-            Lexrank & $0.34$ & $0.09$ & $0.16$ \\
+            Lexrank & $\textbf{0.34}$ & $0.09$ & $\textbf{0.16}$ \\
         \hline
-            Extractive & $0.33$ & $0.10$ & $0.16$ \\
+            Extractive & $0.33$ & $\textbf{0.10}$ & $\textbf{0.16}$ \\
         \hline
             GPT2 & $0.18$ & $0.02$ & $0.09$ \\
         \hline
@@ -190,7 +190,7 @@ In this section, we evaluate the performance of the summarization models describ
         \hline
             Lay & 20.01 & 16.50 & 19.11 \\
         \hline
-            Lex (Baseline) & 33.58 & 15.41 & 18.50 \\
+            Lex (Baseline) & \textbf{33.58} & \textbf{15.41} & 18.50 \\
         \hline
             Extractive & 10.60 & 25.01 & 26.22 \\
         \hline
@@ -198,13 +198,15 @@ In this section, we evaluate the performance of the summarization models describ
         \hline
             Longformer (top-15) & 23.84 & 19.62 & 20.62 \\
         \hline
-            Longformer (top-10) & $27.33$ & $16.89$ & $18.44$ \\
+            Longformer (top-10) & $27.33$ & $16.89$ & $\textbf{18.44}$ \\
         \hline
     \end{tabular}
     \caption{Readability metrics. \\ FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
 \end{table}
 
 ## Qualitative Evaluation {#sec:evaluation-qualitative}
+
+- 
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
 
