@@ -106,9 +106,10 @@ We also report high F1 scores of $0.767$ and $0.765$ on the validation and test 
     \caption{BioClinicalBERT: Evaluation Loss}\label{fig:extractor-eval-loss}
 \end{figure}
 We then use the BioClinicalBERT model to predict the probability of each sentence in the article being _summarising_.
-The top ten $10$ with the highest probability are selected and concatenated to produce the final extractive summary.
+The top $10$ with the highest probability are selected and concatenated to produce the final extractive summary.
 We arrive at this number after analysing the token distribution and finding that $10$ sentences is a reasonable number 
 to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the ten sentences and their lay paraphrases).
+We also experiment with a top-$15$ strategy only for the Clinical Longformer to fully make use of the sparse attention mechanism (see Section \ref{sec:evaluation-quantitative}).
 While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
 extracted text only as an intermediate step fed into the abstractive models, paraphrasing it into lay language.
 
@@ -160,7 +161,14 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
 
 In this section, we evaluate the performance of the summarization models described in Section \ref{sec:methods}.
 
-## Quantitative Evaluation {#sec:evaluation-quantitative}
+# Quantitative Evaluation {#sec:evaluation-quantitative}
+
+We compare our models by calculating the average F1 ROUGE scores on the PLOS evaluation dataset.
+From Table \ref{tab:dataset_stats}, we can see that our Extractive Network performs as good as the standard ATS baseline - LexRank [@erkan2004] in terms of the lexical overlap with the gold lay summary.
+On the other hand, we observe that the metrics decrease for the generative models due to their abstractive nature, 
+which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
+Nevertheless, it is clear that the Clinical Longformer outperforms considerably the GPT-2 perhaps due to the fact the latter is pre-trained on out-of-domain data.
+Furthermore, we also note that there are insignificant differences in ROUGE between the top-10 and top-15 strategies of Sentence Extraction (see Section \ref{sec:extractor-network}) for the Clinical Longformer.
 
 \begin{table}[htbp]
     \centering
@@ -181,6 +189,10 @@ In this section, we evaluate the performance of the summarization models describ
     \end{tabular}
     \caption{ROUGE F1 Scores.}\label{tab:dataset_stats}
 \end{table}
+
+Regarding the readability of the generated summaries, it is clear and expected that our Extracted summary results in a 
+low FKGL [@Kincaid1975DerivationON] and a high ARI [@senter1967automated] - meaning that it contains a lot of scientific jargon and is hard to read.
+On the other hand, the GPT-2 and Longformer 
 
 \begin{table}[htbp]
     \centering
@@ -205,8 +217,6 @@ In this section, we evaluate the performance of the summarization models describ
 \end{table}
 
 ## Qualitative Evaluation {#sec:evaluation-qualitative}
-
-- 
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
 
