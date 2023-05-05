@@ -195,10 +195,15 @@ We identify the following limitations of our work:
    they are insufficient for the estimation of text readability in scientific writing. 
    Instead, what some researchers propose is to leverage masked language models [@martinc_readability] 
    like the noun-phrase BERT-based metric [@luo] that computes the probability of technical jargon.
-   We appreciate that this method would have provided a more thorough evaluation of our models and we leave it as future work.
+   We appreciate that this method would have provided a more thorough evaluation of our models, and we leave it as future work.
 
-2. **Limited input size**: The input size of the Longformer is limited to 1024 tokens. 
-This means that we cannot use the full lay summary as input to the model. We experimented with different input sizes and found that 1024 tokens worked best for our dataset. However, this means that we are not using the full lay summary as input to the model. This is a limitation of the Longformer model and not of our work.
+2. **Limited input size**: Due to the limited available computational resources (i.e., Tesla V100-SXM2-16GB) we had to restrict 
+   the input size of the Longformer to $1,024$ tokens (i.e., 4 times less than the maximum size). Therefore, we could not make use of
+   the full model capabilities in attending to long-range dependencies. This limitation propagates back to our extractor network,
+   which produces only enough sentences to fit in the abstractor network. Thus, if we could increase the Longformer's input size, we could
+   do the same for the Extractor model.
+   
+   
 
 ## Future Work {#sec:future-work}
 1. Text-to-text (T5) experimentation [@clinicalt5]:
