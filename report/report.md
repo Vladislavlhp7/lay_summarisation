@@ -9,6 +9,7 @@ header-includes:
   - \usepackage{acl}
   - \usepackage{natbib}
   - \usepackage[inline]{enumitem}
+  - \usepackage[justification=centering]{caption}
   - \bibliographystyle{acl_natbib.bst}
   - \setcounter{secnumdepth}{5}
 graphics: yes
@@ -156,7 +157,7 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
 
 # Evaluation {#sec:evaluation}
 
-\begin{table*}[htbp]
+\begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|c|}
         \hline
@@ -168,15 +169,15 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
         \hline
             GPT2 & $0.18$ & $0.02$ & $0.09$ \\
         \hline
-            Longformer (top-15 sents) & $0.28$ & $0.07$ & $0.15$ \\
+            Longformer (top-15) & $0.28$ & $0.07$ & $0.15$ \\
         \hline
-            Longformer (top-10 sents) & $0.29$ & $0.06$ & $0.14$ \\
+            Longformer (top-10) & $0.29$ & $0.06$ & $0.14$ \\
         \hline
     \end{tabular}
     \caption{ROUGE F1 Scores.}\label{tab:dataset_stats}
-\end{table*}
+\end{table}
 
-\begin{table*}[htbp]
+\begin{table}[htbp]
     \centering
     \begin{tabular}{|c|c|c|c|}
         \hline
@@ -190,13 +191,13 @@ In the evaluation phase, we compared the performance of the GPT-2 Abstractor aga
         \hline
             GPT2 & 30.68 & 21.36 & 23.26 \\
         \hline
-            Longformer (top-15 sents) & 23.84 & 19.62 & 20.62 \\
+            Longformer (top-15) & 23.84 & 19.62 & 20.62 \\
         \hline
-            Longformer (top-10 sents) & $27.33$ & $16.89$ & $18.44$ \\
+            Longformer (top-10) & $27.33$ & $16.89$ & $18.44$ \\
         \hline
     \end{tabular}
-    \caption{Readability metrics. \\\hspace{\textwidth} FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
-\end{table*}
+    \caption{Readability metrics. \\ FKGL - higher is better, ARI and Gunning - lower is better}\label{tab:dataset_stats}
+\end{table}
 
 # Discussion and Conclusion {#sec:discussion-conclusion}
 ## Limitations {#sec:limitations}
