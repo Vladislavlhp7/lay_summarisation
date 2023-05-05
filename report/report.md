@@ -103,9 +103,10 @@ We also report high F1 scores of $0.767$ and $0.765$ on the validation and test 
 \end{figure}
 
 We then use the BioClinicalBERT model to predict the probability of each sentence in the article being _summarising_.
-The top ten $10$ with the highest probability are selected and concatenated to produce the final extractive summary.
+The top $10$ with the highest probability are selected and concatenated to produce the final extractive summary.
 We arrive at this number after analysing the token distribution and finding that $10$ sentences is a reasonable number 
 to fit within the maximum input size of the GPT-2 abstractive model (i.e., $1,024$ tokens split between the ten sentences and their lay paraphrases).
+We also experiment with a top-$15$ strategy only for the Clinical Longformer to fully make use of the sparse attention mechanism (see Section \ref{sec:evaluation-quantitative}).
 While we are aware that this can cause the _dangling anaphora phenomenon_ [@lin2009summarization], we use the 
 extracted text only as an intermediate step fed into the abstractive models which paraphrase it into lay language.
 
@@ -163,6 +164,7 @@ From Table \ref{tab:dataset_stats}, we can see that our Extractive Network perfo
 On the other hand, we observe that the metrics decrease for the generative models due to their abstractive nature, 
 which demonstrates how problematic and inconvenient for lay summarisation ROUGE is.
 Nevertheless, it is clear that the Clinical Longformer outperforms considerably the GPT-2 perhaps due to the fact the latter is pre-trained on out-of-domain data.
+Furthermore, we also note that there are insignificant differences in ROUGE between the top-10 and top-15 strategies of Sentence Extraction (see Section \ref{sec:extractor-network}) for the Clinical Longformer.
 
 \begin{table}[htbp]
     \centering
